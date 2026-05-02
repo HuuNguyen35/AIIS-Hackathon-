@@ -6,6 +6,7 @@ const statusRouter = require("./routes/status");
 const usersRouter = require("./routes/users");
 const transcriptsRouter = require("./routes/transcripts");
 const webhookRouter = require("./routes/webhook");
+const pushRouter = require("./routes/pushRegistration");
 const { startPolling } = require("./services/nws");
 
 const app = express();
@@ -19,6 +20,7 @@ app.use("/status", statusRouter);
 app.use("/users", usersRouter);
 app.use("/transcripts", transcriptsRouter);
 app.use("/webhook", webhookRouter);
+app.use("/push-token", pushRouter);
 
 app.get("/", (_req, res) => {
   res.json({ service: "Block Disaster Response API", status: "running" });

@@ -5,6 +5,7 @@ const POLL_INTERVAL = 60_000;
 const ALERT_TYPES = ["Flood Watch", "Excessive Heat Warning", "Tornado Warning"];
 
 let previousAlertIds = new Set();
+let currentAlert = null;
 
 async function fetchAlerts() {
   try {
@@ -29,6 +30,13 @@ async function poll() {
   const features = await fetchAlerts();
   const relevant = features.filter((f) => ALERT_TYPES.includes(f.properties?.event));
 
+  if (relevant.length > 0) {
+    const latest = relevant[0].properties;
+    const areas = latest.areaDesc || "";
+    const county = areas.split(";")[0].trim();
+    currentAlert = { name: latest.event, county };
+  }
+
   for (const feature of relevant) {
     const alertId = feature.properties?.id || feature.id;
     if (!previousAlertIds.has(alertId)) {
@@ -49,4 +57,8 @@ function startPolling() {
   setInterval(poll, POLL_INTERVAL);
 }
 
-module.exports = { startPolling };
+function getCurrentAlert() {
+  return currentAlert;
+}
+
+module.exports = { startPolling, getCurrentAlert };

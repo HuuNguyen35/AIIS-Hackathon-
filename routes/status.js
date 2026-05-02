@@ -7,7 +7,7 @@ const VALID_STATUSES = ["uncontacted", "neighbor_en_route", "safe"];
 
 router.post("/", (req, res) => {
   try {
-    const { id, status, transcript } = req.body;
+    const { id, status, transcript, lat, lng } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: "id is required" });
@@ -20,6 +20,8 @@ router.post("/", (req, res) => {
     const updates = {};
     if (status) updates.status = status;
     if (transcript !== undefined) updates.transcript = transcript;
+    if (lat !== undefined) updates.lat = lat;
+    if (lng !== undefined) updates.lng = lng;
 
     const user = updateUser(id, updates);
     if (!user) {
