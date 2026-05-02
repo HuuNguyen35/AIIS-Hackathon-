@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <title>HandsOnDeck</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -154,6 +155,25 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 .home-footer{margin-top:auto;padding-top:16px;font-size:11px;color:var(--text2);letter-spacing:.5px;text-align:center}
 .home-error{margin-top:12px;padding:14px;background:var(--accent-soft);border-radius:14px;color:var(--accent);font-size:13px;font-weight:600;display:none;text-align:center;animation:shake .3s ease}
 
+.flood-overlay{display:none;position:absolute;inset:0;z-index:50;background:rgba(196,57,28,.06);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;animation:rise .4s cubic-bezier(.16,1,.3,1) both}
+.flood-overlay.show{display:flex}
+.flood-icon{width:64px;height:64px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.flood-icon svg{width:32px;height:32px;color:var(--accent)}
+.flood-title{font-family:var(--font-h);font-size:26px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.flood-sub{font-size:14px;color:var(--text2);margin-bottom:32px;max-width:280px;line-height:1.5}
+.flood-btns{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px}
+.flood-btns .btn{margin-top:0}
+.flood-btns .btn-success{background:var(--success)}
+
+.system-active{display:flex;align-items:center;gap:10px;margin-bottom:20px;font-size:14px;font-weight:600;color:var(--success)}
+.system-active .sa-dot{width:10px;height:10px;border-radius:50%;background:var(--success);animation:pulseDot 2s ease infinite}
+
+.resp-toggle{display:flex;background:var(--surface);border-radius:12px;padding:3px;margin-bottom:16px;border:1px solid var(--border)}
+.resp-toggle button{flex:1;padding:10px;border:none;border-radius:10px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;background:transparent;color:var(--text2);transition:all .2s}
+.resp-toggle button.active{background:var(--white);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+#resp-map{width:100%;height:300px;border-radius:16px;margin-bottom:16px;display:none;overflow:hidden;border:1px solid var(--border)}
+.nb-handling{font-size:12px;font-weight:700;color:var(--success);background:var(--success-soft);padding:4px 10px;border-radius:8px;display:inline-block;margin-bottom:6px}
+
 .standby-pad{padding:0 24px;padding-top:max(env(safe-area-inset-top),68px);padding-bottom:40px;flex:1;display:flex;flex-direction:column}
 .standby-heading{font-family:var(--font-h);font-size:26px;font-weight:800;margin-bottom:20px}
 .alert-list{display:flex;flex-direction:column;gap:12px;flex:1}
@@ -230,7 +250,17 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 
 <div class="screen" id="pg-h6"><div class="success-center"><div class="success-circle r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="success-title r r1">You're registered.</div><div class="success-sub r r2">We'll contact you automatically if a disaster is detected in your area.</div><button class="btn r r3" id="h6-go">Go to My Emergency Screen</button></div></div>
 
-<div class="screen" id="pg-home"><div class="home-pad"><div class="home-name" id="home-name"></div><div class="status-pill pill-unknown" id="home-status"><span class="dot"></span><span id="home-status-text">STANDING BY</span></div><div id="home-normal"><div class="help-zone"><div class="help-ring"></div><div class="help-ring"></div><div class="help-ring"></div><button class="help-btn" id="btn-help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg><span>I NEED<br>HELP</span></button></div><button class="btn-safe-pill" id="btn-safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button></div><div class="sent-wrap" id="sent-state"><div class="success-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="sent-title">Help is coming</div><ul class="sent-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Responders notified</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Neighbors alerted</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Location shared</li></ul></div><button class="btn-safe-pill" id="btn-safe-after" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button><div class="home-error" id="home-error"></div><div class="home-footer" id="home-footer">Last updated: --:--:--</div></div></div>
+<div class="screen" id="pg-home">
+<div class="flood-overlay" id="flood-overlay">
+  <div class="flood-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+  <div class="flood-title">Flood Watch Detected</div>
+  <div class="flood-sub">A flood watch has been issued in your area. Do you need help evacuating?</div>
+  <div class="flood-btns">
+    <button class="btn" id="flood-help">I NEED HELP</button>
+    <button class="btn btn-success" id="flood-safe">I AM SAFE</button>
+  </div>
+</div>
+<div class="home-pad"><div class="home-name" id="home-name"></div><div class="system-active" id="system-active"><span class="sa-dot"></span>System Active</div><div class="status-pill pill-unknown" id="home-status"><span class="dot"></span><span id="home-status-text">STANDING BY</span></div><div id="home-normal"><div class="help-zone"><div class="help-ring"></div><div class="help-ring"></div><div class="help-ring"></div><button class="help-btn" id="btn-help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg><span>I NEED<br>HELP</span></button></div><button class="btn-safe-pill" id="btn-safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button></div><div class="sent-wrap" id="sent-state"><div class="success-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="sent-title">Help is coming</div><ul class="sent-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Responders notified</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Neighbors alerted</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Location shared</li></ul></div><button class="btn-safe-pill" id="btn-safe-after" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button><div class="home-error" id="home-error"></div><div class="home-footer" id="home-footer">Last updated: --:--:--</div></div></div>
 
 <div class="screen" id="pg-v1"><div class="page-pad"><div class="pg-heading r">Join the emergency response network.</div><div class="pg-sub r r1">Your help could save a life.</div><div class="fi r r2"><input id="v-name" type="text" placeholder=" "/><label>Full name</label><span class="fi-line"></span></div><div class="fi r r3"><input id="v-phone" type="tel" placeholder=" "/><label>Phone number</label><span class="fi-line"></span></div><button class="btn r r4" id="v1-next">Next</button></div></div>
 
@@ -244,10 +274,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 
 <div class="screen" id="pg-r1"><div class="page-pad"><div class="pg-heading r">First Responder Access.</div><div class="pg-sub r r1">View all cases in your area.</div><div class="fi r r2"><input id="r-name" type="text" placeholder=" "/><label>Full name</label><span class="fi-line"></span></div><div class="fi r r3"><input id="r-org" type="text" placeholder=" "/><label>Organization</label><span class="fi-line"></span></div><button class="btn r r4" id="r1-go">Access Responder View</button></div></div>
 
-<div class="screen" id="pg-resp"><div class="resp-pad"><div class="resp-header"><h2>Cases</h2><div class="resp-count" id="resp-count">0</div></div><div class="case-list" id="case-list"></div></div><button class="sim-btn" id="sim-btn">SIMULATE FLOOD WATCH</button></div>
+<div class="screen" id="pg-resp"><div class="resp-pad"><div class="resp-header"><h2>Cases</h2><div class="resp-count" id="resp-count">0</div></div><div class="resp-toggle"><button id="resp-map-btn">Map</button><button id="resp-list-btn" class="active">List</button></div><div id="resp-map"></div><div class="case-list" id="case-list"></div></div><button class="sim-btn" id="sim-btn">SIMULATE FLOOD WATCH</button></div>
 
 <div class="confirm-bg" id="confirm-dialog"><div class="confirm-card"><h3>Request emergency help?</h3><p>This will alert responders and notify your neighbors.</p><div class="btn-row"><button class="btn btn-outline" id="btn-cancel">Cancel</button><button class="btn" id="btn-confirm">Yes, I Need Help</button></div></div></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 var API=window.location.origin,H={'Content-Type':'application/json','ngrok-skip-browser-warning':'1'};
 var userId=localStorage.getItem('blockUserId'),userName=localStorage.getItem('blockUserName'),userRole=localStorage.getItem('blockRole');
@@ -290,10 +321,14 @@ getLocation().then(function(loc){return fetch(API+'/register',{method:'POST',hea
 .catch(function(){toast('Registration failed');btn.disabled=false})});
 document.getElementById('h6-go').addEventListener('click',function(){hist=['pg-landing'];transitionTo('pg-home');startPoll()});
 
-var LABELS={uncontacted:'HELP REQUESTED',neighbor_en_route:'NEIGHBOR EN ROUTE',safe:'SAFE'},pollTimer=null;
-function startPoll(){document.getElementById('home-name').textContent=userName||'';pollStatus();if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(pollStatus,5000)}
+var LABELS={uncontacted:'HELP REQUESTED',neighbor_en_route:'NEIGHBOR EN ROUTE',safe:'SAFE'},pollTimer=null,activeAlert=null;
+function startPoll(){document.getElementById('home-name').textContent=userName||'';pollStatus();pollAlert();if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(function(){pollStatus();pollAlert()},5000)}
 function pollStatus(){fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){var u=Array.isArray(d)?d:(d.users||[]);var me=u.find(function(x){return x.id===userId});if(me)updateStatus(me.status);document.getElementById('home-footer').textContent='Last updated: '+new Date().toLocaleTimeString()}).catch(function(){})}
+function pollAlert(){fetch(API+'/alert',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){var ov=document.getElementById('flood-overlay'),sa=document.getElementById('system-active');if(d.alert){activeAlert=d.alert;ov.classList.add('show');sa.style.display='none'}else{activeAlert=null;ov.classList.remove('show');sa.style.display=''}}).catch(function(){})}
 function updateStatus(s){document.getElementById('home-status').className='status-pill pill-'+(s||'unknown');document.getElementById('home-status-text').textContent=LABELS[s]||'STANDING BY'}
+
+document.getElementById('flood-help').addEventListener('click',function(){sendHelp();document.getElementById('flood-overlay').classList.remove('show')});
+document.getElementById('flood-safe').addEventListener('click',function(){document.getElementById('flood-overlay').classList.remove('show');markSafe(document.getElementById('btn-safe'));toast('You have been marked safe. Stay alert.')});
 
 document.getElementById('btn-help').addEventListener('click',function(){document.getElementById('confirm-dialog').classList.add('show')});
 document.getElementById('btn-cancel').addEventListener('click',function(){document.getElementById('confirm-dialog').classList.remove('show')});
@@ -302,7 +337,7 @@ document.getElementById('btn-confirm').addEventListener('click',function(){docum
 function sendHelp(){var btn=document.getElementById('btn-help'),err=document.getElementById('home-error');err.style.display='none';btn.disabled=true;
 getLocation().then(function(loc){var b={id:userId,status:'uncontacted'};if(loc.lat)b.lat=loc.lat;if(loc.lng)b.lng=loc.lng;return fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify(b)})})
 .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
-.then(function(){updateStatus('uncontacted');document.getElementById('home-normal').style.display='none';document.getElementById('sent-state').classList.add('show');document.getElementById('btn-safe-after').style.display='';fetch(API+'/call/'+userId,{method:'POST',headers:H}).catch(function(){})})
+.then(function(){updateStatus('uncontacted');document.getElementById('home-normal').style.display='none';document.getElementById('sent-state').classList.add('show');document.getElementById('btn-safe-after').style.display='';fetch(API+'/notify/'+userId,{method:'POST',headers:H}).catch(function(){})})
 .catch(function(e){err.textContent='Failed: '+e.message;err.style.display='block';btn.disabled=false})}
 
 function markSafe(b){b.disabled=true;var s=b.querySelector('span');s.textContent='Updating...';fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:userId,status:'safe'})}).then(function(r){if(!r.ok)throw new Error('e');return r.json()}).then(function(){updateStatus('safe');s.textContent='Marked Safe'}).catch(function(){b.disabled=false;s.textContent='I Am Safe'})}
@@ -341,10 +376,20 @@ function renderAlerts(list){
   });
 }
 
-document.getElementById('r1-go').addEventListener('click',function(){if(!document.getElementById('r-name').value.trim())return;localStorage.setItem('blockRole','responder');userRole='responder';hist=['pg-landing'];transitionTo('pg-resp');startRespPoll()});
-var rTimer=null;function startRespPoll(){pollResp();if(rTimer)clearInterval(rTimer);rTimer=setInterval(pollResp,5000)}
+document.getElementById('r1-go').addEventListener('click',function(){if(!document.getElementById('r-name').value.trim())return;localStorage.setItem('blockRole','responder');userRole='responder';hist=['pg-landing'];transitionTo('pg-resp');startRespPoll();initMap()});
+var rTimer=null,respMap=null,respMarkers={},respView='list';
+function startRespPoll(){pollResp();if(rTimer)clearInterval(rTimer);rTimer=setInterval(pollResp,5000)}
 var SO={uncontacted:0,neighbor_en_route:1,safe:2};
-function pollResp(){fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){var u=Array.isArray(d)?d:(d.users||[]);u.sort(function(a,b){return(SO[a.status]||0)-(SO[b.status]||0)});document.getElementById('resp-count').textContent=u.filter(function(x){return x.status!=='safe'}).length+' unresolved';renderCases(u)}).catch(function(){})}
+var SC={uncontacted:'#C4391C',neighbor_en_route:'#C0854A',safe:'#4A7C59'};
+
+document.getElementById('resp-map-btn').addEventListener('click',function(){respView='map';this.classList.add('active');document.getElementById('resp-list-btn').classList.remove('active');document.getElementById('resp-map').style.display='block';document.getElementById('case-list').style.display='none';if(respMap)setTimeout(function(){respMap.invalidateSize()},100)});
+document.getElementById('resp-list-btn').addEventListener('click',function(){respView='list';this.classList.add('active');document.getElementById('resp-map-btn').classList.remove('active');document.getElementById('resp-map').style.display='none';document.getElementById('case-list').style.display=''});
+
+function initMap(){if(respMap)return;respMap=L.map('resp-map',{zoomControl:true}).setView([29.4241,-98.4936],11);L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'OpenStreetMap/CARTO',subdomains:'abcd',maxZoom:20}).addTo(respMap);setTimeout(function(){respMap.invalidateSize()},200)}
+
+function pollResp(){fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){var u=Array.isArray(d)?d:(d.users||[]);u.sort(function(a,b){return(SO[a.status]||0)-(SO[b.status]||0)});document.getElementById('resp-count').textContent=u.filter(function(x){return x.status!=='safe'}).length+' unresolved';renderCases(u.filter(function(x){return x.status!=='safe'}));updateMapMarkers(u)}).catch(function(){})}
+
+function updateMapMarkers(users){if(!respMap)return;var seen={};users.forEach(function(u){if(!u.lat||!u.lng)return;seen[u.id]=true;var color=SC[u.status]||'#C4391C';if(respMarkers[u.id]){respMarkers[u.id].setStyle({fillColor:color,color:'#fff'})}else{var m=L.circleMarker([u.lat,u.lng],{radius:9,fillColor:color,color:'#fff',weight:3,fillOpacity:.9}).addTo(respMap);m.bindTooltip(u.name+' ('+u.status+')',{direction:'top',offset:[0,-12]});respMarkers[u.id]=m}});Object.keys(respMarkers).forEach(function(id){if(!seen[id]){respMap.removeLayer(respMarkers[id]);delete respMarkers[id]}})}
 
 function renderCases(list){
   var el=document.getElementById('case-list');el.textContent='';
@@ -359,6 +404,7 @@ function renderCases(list){
     if(u.disability){var db=document.createElement('span');db.className='ac-badge b-dis';db.textContent=u.disability;badges.appendChild(db)}
     var sb=document.createElement('span');sb.className='ac-badge '+(u.status==='uncontacted'?'b-dis':'b-status');sb.textContent=u.status;badges.appendChild(sb);
     card.appendChild(badges);
+    if(u.status==='neighbor_en_route'){var nb=document.createElement('div');nb.className='nb-handling';nb.textContent='Neighbor handling — monitoring only';card.appendChild(nb)}
     if(u.medications){var med=document.createElement('div');med.className='case-meds';med.textContent='Meds: '+u.medications;card.appendChild(med)}
     if(u.transcript&&u.transcript.trim()){var tr=document.createElement('div');tr.className='case-transcript';tr.textContent='"'+u.transcript.substring(0,120)+(u.transcript.length>120?'...':'')+'"';card.appendChild(tr)}
     var tm=document.createElement('div');tm.className='case-time';tm.textContent='Updated: '+new Date(u.updatedAt).toLocaleTimeString();card.appendChild(tm);

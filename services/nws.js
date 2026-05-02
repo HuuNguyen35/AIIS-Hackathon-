@@ -1,5 +1,3 @@
-const { triggerDisaster } = require("./vapi");
-
 const NWS_URL = "https://api.weather.gov/alerts/active";
 const POLL_INTERVAL = 60_000;
 const ALERT_TYPES = ["Flood Watch", "Excessive Heat Warning", "Tornado Warning"];
@@ -7,17 +5,20 @@ const ALERT_TYPES = ["Flood Watch", "Excessive Heat Warning", "Tornado Warning"]
 let previousAlertIds = new Set();
 let currentAlert = null;
 
+function setCurrentAlert(alert) {
+  currentAlert = alert;
+}
+
+function getCurrentAlert() {
+  return currentAlert;
+}
+
 async function fetchAlerts() {
   try {
     const res = await fetch(NWS_URL, {
       headers: { "User-Agent": "BlockDisasterApp/1.0" },
     });
-
-    if (!res.ok) {
-      console.error(`NWS API returned ${res.status}`);
-      return [];
-    }
-
+    if (!res.ok) { console.error(`NWS API returned ${res.status}`); return []; }
     const data = await res.json();
     return data.features || [];
   } catch (err) {
@@ -42,11 +43,6 @@ async function poll() {
     if (!previousAlertIds.has(alertId)) {
       console.log(`New alert detected: ${feature.properties.event} — ${feature.properties.headline}`);
       previousAlertIds.add(alertId);
-      triggerDisaster({
-        event: feature.properties.event,
-        headline: feature.properties.headline,
-        description: feature.properties.description,
-      });
     }
   }
 }
@@ -57,8 +53,4 @@ function startPolling() {
   setInterval(poll, POLL_INTERVAL);
 }
 
-function getCurrentAlert() {
-  return currentAlert;
-}
-
-module.exports = { startPolling, getCurrentAlert };
+module.exports = { startPolling, getCurrentAlert, setCurrentAlert };

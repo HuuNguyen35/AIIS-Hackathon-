@@ -1,45 +1,47 @@
 const twilio = require("twilio");
 
-function sendNeighborSMS(user) {
+function getClient() {
   const sid = process.env.TWILIO_ACCOUNT_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const token = process.env.TWILIO_AUTH_TOKEN;
   const from = process.env.TWILIO_PHONE;
+  if (!sid || !token || !from) return null;
+  return { client: twilio(sid, token), from };
+}
 
-  if (!sid || !authToken || !from) {
-    console.error("Twilio env vars not set, skipping SMS");
-    return Promise.resolve(false);
-  }
+function getBaseUrl() {
+  return process.env.BASE_URL || "https://899a-66-253-168-123.ngrok-free.app";
+}
 
+function sendSMS(to, body) {
+  const t = getClient();
+  if (!t) { console.error("Twilio env vars not set, skipping SMS"); return Promise.resolve(false); }
+  return t.client.messages.create({ body, from: t.from, to })
+    .then((msg) => { console.log(`SMS sent to ${to} (sid: ${msg.sid})`); return true; })
+    .catch((err) => { console.error(`SMS to ${to} failed:`, err.message); return false; });
+}
+
+function sendAlertToUser(user) {
+  const url = getBaseUrl();
+  const body = `FLOOD WATCH ALERT: A flood watch has been issued in your area. Do you need help evacuating? Open the app to respond: ${url}/v2`;
+  return sendSMS(user.phone, body);
+}
+
+function sendNeighborSMS(user) {
   if (!user.neighborPhone) {
     console.log(`No neighbor phone for ${user.name}, skipping SMS`);
     return Promise.resolve(false);
   }
 
   const phones = user.neighborPhone.split(",").map((p) => p.trim()).filter(Boolean);
-  if (phones.length === 0) {
-    console.log(`No valid neighbor phones for ${user.name}, skipping SMS`);
-    return Promise.resolve(false);
-  }
+  if (phones.length === 0) return Promise.resolve(false);
 
-  const baseUrl = process.env.BASE_URL || "https://4597-66-253-168-123.ngrok-free.app";
-  const client = twilio(sid, authToken);
+  const url = getBaseUrl();
   const disability = user.disability || "no listed disability";
-  const body = `EMERGENCY ALERT: ${user.name} at ${user.address} floor ${user.floor} needs help evacuating. They have ${disability}. Tap this link to respond: ${baseUrl}/neighbor?id=${user.id}`;
+  const meds = user.medications || "none listed";
+  const body = `EMERGENCY: ${user.name} at ${user.address} floor ${user.floor} needs help evacuating. They have ${disability}. Their medications: ${meds}. Tap to respond: ${url}/neighbor?id=${user.id}`;
 
-  const sends = phones.map((phone) =>
-    client.messages
-      .create({ body, from, to: phone })
-      .then((msg) => {
-        console.log(`SMS sent to ${phone} (sid: ${msg.sid})`);
-        return true;
-      })
-      .catch((err) => {
-        console.error(`SMS to ${phone} failed:`, err.message);
-        return false;
-      })
-  );
-
+  const sends = phones.map((phone) => sendSMS(phone, body));
   return Promise.all(sends).then((results) => results.some(Boolean));
 }
 
-module.exports = { sendNeighborSMS };
+module.exports = { sendSMS, sendAlertToUser, sendNeighborSMS };

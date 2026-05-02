@@ -893,7 +893,7 @@
         document.getElementById('home-normal').style.display = 'none';
         document.getElementById('sent-state').classList.add('visible');
         document.getElementById('btn-safe-after').style.display = '';
-        fetch(API + '/call/' + userId, { method: 'POST', headers: HEADERS }).catch(function() {});
+        fetch(API + '/notify/' + userId, { method: 'POST', headers: HEADERS }).catch(function() {});
       })
       .catch(function(err) { errEl.textContent = 'Failed: ' + err.message; errEl.style.display = 'block'; btn.disabled = false; });
     }
