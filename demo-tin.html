@@ -49,8 +49,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text2);gap:10px;padding:40px}
 .empty-dot{width:12px;height:12px;border-radius:50%;background:var(--success);animation:pulseDot 2s ease infinite}
 
-.sim{position:fixed;bottom:max(env(safe-area-inset-bottom),16px);left:16px;right:16px;z-index:600;height:56px;background:var(--accent);color:#fff;border:none;border-radius:16px;font-family:var(--font-b);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(196,57,28,.15);transition:transform .1s}
+.sim-row{position:fixed;bottom:max(env(safe-area-inset-bottom),16px);left:16px;right:16px;z-index:600;display:flex;gap:10px}
+.sim{flex:1;height:56px;background:var(--accent);color:#fff;border:none;border-radius:16px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(196,57,28,.15);transition:transform .1s}
 .sim:active{transform:scale(.97)}
+.sim-reset{background:var(--surface);color:var(--text2);box-shadow:none;border:1px solid var(--border);flex:0 0 auto;padding:0 20px}
 
 .toast{position:fixed;top:max(env(safe-area-inset-top),16px);left:50%;transform:translateX(-50%) translateY(-80px);z-index:9000;background:var(--text);color:var(--white);font-size:14px;font-weight:600;padding:14px 24px;border-radius:14px;white-space:nowrap;transition:transform .35s cubic-bezier(.16,1,.3,1);box-shadow:0 8px 24px rgba(0,0,0,.12)}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -62,7 +64,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 
 <div class="header"><h1>HandsOnDeck</h1><div class="count" id="count">0</div></div>
 <div class="list" id="list"></div>
-<button class="sim" id="sim">SIMULATE FLOOD WATCH</button>
+<div class="sim-row"><button class="sim" id="sim">SIMULATE FLOOD WATCH</button><button class="sim sim-reset" id="reset">RESET</button></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -124,6 +126,13 @@ document.getElementById('sim').addEventListener('click',function(){
   fetch(API+'/test-trigger',{method:'POST',headers:H})
   .then(function(){toast('Flood watch triggered for San Antonio');b.disabled=false;b.textContent='SIMULATE FLOOD WATCH';poll()})
   .catch(function(){b.disabled=false;b.textContent='SIMULATE FLOOD WATCH'});
+});
+
+document.getElementById('reset').addEventListener('click',function(){
+  var b=this;b.disabled=true;b.textContent='Resetting...';
+  fetch(API+'/reset',{method:'POST',headers:H})
+  .then(function(){toast('Simulation reset');b.disabled=false;b.textContent='RESET';seenIds={};poll()})
+  .catch(function(){b.disabled=false;b.textContent='RESET'});
 });
 
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}

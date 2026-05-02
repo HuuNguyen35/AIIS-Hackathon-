@@ -95,6 +95,16 @@ app.post("/test-trigger", async (_req, res) => {
   }
 });
 
+app.post("/reset", (_req, res) => {
+  setCurrentAlert(null);
+  const users = readUsers();
+  for (const user of users) {
+    updateUser(user.id, { status: "safe", transcript: "" });
+  }
+  console.log("Simulation reset. All users set to safe, alert cleared.");
+  res.json({ reset: true });
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`HandsOnDeck server running on port ${PORT}`);
   startPolling();
