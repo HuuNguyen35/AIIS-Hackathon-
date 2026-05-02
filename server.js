@@ -75,6 +75,24 @@ app.put("/users/:id", (req, res) => {
   }
 });
 
+app.patch("/users/:id/neighbors", (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: "phone is required" });
+
+    const user = findUser(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const existing = (user.neighborPhone || "").split(",").map((p) => p.trim()).filter(Boolean);
+    if (!existing.includes(phone)) existing.push(phone);
+
+    const updated = updateUser(req.params.id, { neighborPhone: existing.join(",") });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to add neighbor", details: err.message });
+  }
+});
+
 app.get("/alert", (_req, res) => {
   res.json({ alert: getCurrentAlert() });
 });
