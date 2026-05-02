@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const rateLimit = require("express-rate-limit");
 const registerRouter = require("./routes/register");
 const statusRouter = require("./routes/status");
 const usersRouter = require("./routes/users");
@@ -12,12 +13,25 @@ const { startPolling, getCurrentAlert, setCurrentAlert } = require("./services/n
 const { sendAlertToUser, sendNeighborSMS } = require("./services/sms");
 const { callNeighbor } = require("./services/vapi");
 const { readUsers, findUser, updateUser } = require("./db/store");
+const { normalizePhone } = require("./services/phone");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] }));
 app.use(express.json());
+
+const limiter = rateLimit({ windowMs: 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false });
+app.use(limiter);
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const ms = Date.now() - start;
+    console.log(`${new Date().toISOString()} ${req.method} ${req.path} ${res.statusCode} ${ms}ms`);
+  });
+  next();
+});
 
 app.use("/register", registerRouter);
 app.use("/status", statusRouter);
@@ -54,17 +68,23 @@ app.get("/demo/gavin", (_req, res) => {
   res.sendFile(path.join(__dirname, "demo", "demo-gavin.html"));
 });
 
+app.get("/users/:id", (req, res) => {
+  const user = findUser(req.params.id);
+  if (!user) return res.status(404).json({ error: "User not found" });
+  res.json(user);
+});
+
 app.put("/users/:id", (req, res) => {
   try {
     const { name, phone, address, floor, disability, medications, neighborPhones, neighborPhone } = req.body;
     const updates = {};
     if (name !== undefined) updates.name = name;
-    if (phone !== undefined) updates.phone = phone;
+    if (phone !== undefined) updates.phone = normalizePhone(phone);
     if (address !== undefined) updates.address = address;
     if (floor !== undefined) updates.floor = floor;
     if (disability !== undefined) updates.disability = disability;
     if (medications !== undefined) updates.medications = medications;
-    if (Array.isArray(neighborPhones)) updates.neighborPhone = neighborPhones.filter(Boolean).join(",");
+    if (Array.isArray(neighborPhones)) updates.neighborPhone = neighborPhones.map(normalizePhone).filter(Boolean).join(",");
     else if (neighborPhone !== undefined) updates.neighborPhone = neighborPhone;
 
     const user = updateUser(req.params.id, updates);
@@ -83,8 +103,9 @@ app.patch("/users/:id/neighbors", (req, res) => {
     const user = findUser(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
 
+    const normalized = normalizePhone(phone);
     const existing = (user.neighborPhone || "").split(",").map((p) => p.trim()).filter(Boolean);
-    if (!existing.includes(phone)) existing.push(phone);
+    if (!existing.includes(normalized)) existing.push(normalized);
 
     const updated = updateUser(req.params.id, { neighborPhone: existing.join(",") });
     res.json(updated);
@@ -95,6 +116,11 @@ app.patch("/users/:id/neighbors", (req, res) => {
 
 app.get("/alert", (_req, res) => {
   res.json({ alert: getCurrentAlert() });
+});
+
+app.post("/alert/clear", (_req, res) => {
+  setCurrentAlert(null);
+  res.json({ cleared: true });
 });
 
 app.post("/notify/:id", async (req, res) => {
@@ -115,7 +141,7 @@ app.post("/test-trigger", async (_req, res) => {
     const alert = {
       event: "Flood Watch",
       headline: "Flood Watch issued for Bexar County, San Antonio TX",
-      description: "TEST ALERT — Manual trigger for development testing.",
+      description: "TEST ALERT -- Manual trigger for development testing.",
     };
     setCurrentAlert({ name: alert.event, county: "Bexar County, TX" });
 
