@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<title>BLOCK</title>
+<title>HandsOnDeck</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -33,12 +33,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 .r4{animation-delay:.24s}.r5{animation-delay:.3s}.r6{animation-delay:.36s}
 .r7{animation-delay:.42s}.r8{animation-delay:.48s}
 
-.screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;background:var(--bg);flex-direction:column}
+.screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;background:var(--bg);flex-direction:column;animation:rise .4s cubic-bezier(.16,1,.3,1) both}
 .screen.active{display:flex}
 
-#mountain-overlay{position:fixed;inset:0;z-index:10000;pointer-events:none;display:none}
-#mountain-overlay.animating{display:block}
-#mountain-svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
 
 .back{position:fixed;top:max(env(safe-area-inset-top),14px);left:14px;z-index:500;width:44px;height:44px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(26,18,7,.06)}
 .back:active{transform:scale(.9)}
@@ -208,12 +205,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 </head>
 <body>
 
-<div id="mountain-overlay"><svg id="mountain-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="0,100 0,45 12,38 25,28 35,35 45,22 55,18 65,25 75,30 85,20 100,35 100,100" fill="#C4391C"/></svg></div>
 <button class="back" id="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button>
 <div class="toast" id="toast"></div>
 
 <div class="screen active" id="pg-landing"><div class="landing-pad">
-  <div class="landing-mark r">BLOCK</div>
+  <div class="landing-mark r">HANDSONDECK</div>
   <div class="landing-heading r r1">How can we<br>help you?</div>
   <div class="role-cards">
     <div class="role-card r r2" data-role="help"><div class="role-icon ri-help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></div><div class="role-info"><h3>I Need Help</h3><p>For individuals who may need evacuation assistance</p></div></div>
@@ -258,10 +254,9 @@ var userId=localStorage.getItem('blockUserId'),userName=localStorage.getItem('bl
 var volLat=0,volLng=0,hist=[];
 
 function transitionTo(id){
-  var ov=document.getElementById('mountain-overlay'),svg=document.getElementById('mountain-svg');
-  ov.classList.add('animating');svg.style.transition='none';svg.style.transform='translateY(100%)';
-  void svg.offsetWidth;svg.style.transition='transform 300ms cubic-bezier(.4,0,.2,1)';svg.style.transform='translateY(0)';
-  setTimeout(function(){var c=document.querySelector('.screen.active');if(c)hist.push(c.id);show(id);svg.style.transition='transform 300ms cubic-bezier(.4,0,.2,1)';svg.style.transform='translateY(-100%)';setTimeout(function(){ov.classList.remove('animating')},310)},310);
+  var cur=document.querySelector('.screen.active');
+  if(cur)hist.push(cur.id);
+  show(id);
 }
 function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active');document.getElementById('back-btn').classList.toggle('show',id!=='pg-landing')}
 document.getElementById('back-btn').addEventListener('click',function(){if(hist.length)show(hist.pop())});
