@@ -1,70 +1,52 @@
-const { readUsers, findUser } = require("../db/store");
-
 const VAPI_URL = "https://api.vapi.ai/call/phone";
 
-async function triggerDisaster(alert) {
-  const users = readUsers();
-  console.log(`Triggering disaster calls for ${users.length} users — ${alert.event}`);
+async function callNeighbor(user) {
+  const apiKey = process.env.VAPI_API_KEY;
+  if (!apiKey) {
+    console.error("VAPI_API_KEY not set, skipping Vapi calls");
+    return;
+  }
 
-  for (const user of users) {
+  if (!user.neighborPhone) {
+    console.log(`No neighbor phone for ${user.name}, skipping Vapi calls`);
+    return;
+  }
+
+  const phones = user.neighborPhone.split(",").map((p) => p.trim()).filter(Boolean);
+  const disability = user.disability || "no listed disability";
+  const medications = user.medications || "none listed";
+
+  for (const phone of phones) {
     try {
-      await makeCall(user, alert);
+      const payload = {
+        assistantId: "9f48165f-47e8-417e-b606-acd17f6a61e6",
+        phoneNumberId: "0b2e98f0-b967-4841-a745-e432af9d1b29",
+        customer: { number: phone },
+        assistantOverrides: {
+          firstMessage: `Hi, this is an emergency alert. Your neighbor ${user.name} at ${user.address} floor ${user.floor} needs help evacuating. They have ${disability}. Their medications are ${medications}. Can you please check on them immediately?`,
+        },
+      };
+
+      const res = await fetch(VAPI_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error(`Vapi call to ${phone} failed: ${res.status} ${text}`);
+      } else {
+        const data = await res.json();
+        console.log(`Vapi call initiated to ${phone}, callId: ${data.id}`);
+      }
     } catch (err) {
-      console.error(`Failed to call ${user.name}:`, err.message);
+      console.error(`Vapi call to ${phone} error:`, err.message);
     }
   }
 }
 
-async function callSingleUser(userId) {
-  const user = findUser(userId);
-  if (!user) throw new Error("User not found");
-
-  const alert = {
-    event: "Emergency",
-    headline: "Emergency help requested",
-    description: "User pressed the emergency help button.",
-  };
-
-  await makeCall(user, alert);
-  return user;
-}
-
-async function makeCall(user, alert) {
-  const apiKey = process.env.VAPI_API_KEY;
-  if (!apiKey) {
-    console.error("VAPI_API_KEY not set, skipping call");
-    return;
-  }
-
-  const payload = {
-    assistantId: "9f48165f-47e8-417e-b606-acd17f6a61e6",
-    phoneNumberId: "0b2e98f0-b967-4841-a745-e432af9d1b29",
-    customer: {
-      number: user.phone,
-    },
-    assistantOverrides: {
-      metadata: { userId: user.id },
-      firstMessage: `Hi ${user.name}, this is an emergency alert. A ${alert.event} has been detected in your area. Are you okay and do you need help evacuating?`,
-    },
-  };
-
-  const res = await fetch(VAPI_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Vapi API error ${res.status}: ${text}`);
-  }
-
-  const data = await res.json();
-  console.log(`Call initiated for ${user.name} (${user.phone}), callId: ${data.id}`);
-  return data;
-}
-
-module.exports = { triggerDisaster, callSingleUser };
+module.exports = { callNeighbor };

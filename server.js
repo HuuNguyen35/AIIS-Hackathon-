@@ -10,6 +10,7 @@ const webhookRouter = require("./routes/webhook");
 const pushRouter = require("./routes/pushRegistration");
 const { startPolling, getCurrentAlert, setCurrentAlert } = require("./services/nws");
 const { sendAlertToUser, sendNeighborSMS } = require("./services/sms");
+const { callNeighbor } = require("./services/vapi");
 const { readUsers, findUser, updateUser } = require("./db/store");
 
 const app = express();
@@ -63,6 +64,7 @@ app.post("/notify/:id", async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const smsSent = await sendNeighborSMS(user);
+    callNeighbor(user);
     res.json({ notified: true, smsSent, user: { id: user.id, name: user.name } });
   } catch (err) {
     res.status(500).json({ error: err.message });
