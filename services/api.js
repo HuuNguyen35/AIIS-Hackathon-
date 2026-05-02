@@ -1,4 +1,4 @@
-const BASE_URL = '[REPLACE WITH ANH\'S REPLIT URL]';
+const BASE_URL = 'https://6e7b-66-253-168-123.ngrok-free.app';
 
 export async function registerUser(data) {
   const res = await fetch(`${BASE_URL}/register`, {
@@ -26,7 +26,7 @@ export async function updateStatus(id, status, lat, lng) {
 export async function getAllUsers() {
   const res = await fetch(`${BASE_URL}/users`);
   if (!res.ok) throw new Error(`Fetch users failed: ${res.status}`);
-  return res.json();
+  return res.json().then(data => data.users ?? data);
 }
 
 export async function registerPushToken(id, token) {
