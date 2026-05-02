@@ -43,15 +43,15 @@ app.get("/neighbor", (_req, res) => {
 });
 
 app.get("/demo/anh", (_req, res) => {
-  res.sendFile(path.join(__dirname, "demo-anh.html"));
+  res.sendFile(path.join(__dirname, "demo", "demo-anh.html"));
 });
 
 app.get("/demo/tin", (_req, res) => {
-  res.sendFile(path.join(__dirname, "demo-tin.html"));
+  res.sendFile(path.join(__dirname, "demo", "demo-tin.html"));
 });
 
 app.get("/demo/gavin", (_req, res) => {
-  res.sendFile(path.join(__dirname, "demo-gavin.html"));
+  res.sendFile(path.join(__dirname, "demo", "demo-gavin.html"));
 });
 
 app.put("/users/:id", (req, res) => {
