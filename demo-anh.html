@@ -15,35 +15,64 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 
 @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseDot{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
-@keyframes pulseRing{0%{transform:scale(.85);opacity:.5}70%,100%{transform:scale(1.25);opacity:0}}
-@keyframes glowBtn{0%,100%{box-shadow:0 8px 40px rgba(196,57,28,.2)}50%{box-shadow:0 8px 56px rgba(196,57,28,.35)}}
 
 .r{animation:rise .5s cubic-bezier(.16,1,.3,1) both}
-.r1{animation-delay:.08s}.r2{animation-delay:.16s}.r3{animation-delay:.24s}
+.r1{animation-delay:.08s}.r2{animation-delay:.16s}.r3{animation-delay:.24s}.r4{animation-delay:.32s}
 
-/* back */
-.back{position:fixed;top:max(env(safe-area-inset-top),14px);left:14px;z-index:500;width:44px;height:44px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(26,18,7,.06)}
-.back:active{transform:scale(.9)}
-.back svg{width:18px;height:18px;color:var(--text)}
-
-/* screens */
-.screen{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:max(env(safe-area-inset-top),64px);padding-bottom:max(env(safe-area-inset-bottom),40px);overflow-y:auto}
+.screen{display:none;position:absolute;inset:0;flex-direction:column;overflow-y:auto}
 .screen.active{display:flex}
 
-/* IDLE */
+/* top buttons */
+.top-btn{position:fixed;top:max(env(safe-area-inset-top),14px);z-index:500;width:44px;height:44px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(26,18,7,.06)}
+.top-btn:active{transform:scale(.9)}
+.top-btn svg{width:18px;height:18px;color:var(--text)}
+.top-btn.show{display:flex}
+#btn-back{left:14px}
+#btn-settings{right:14px}
+
+/* ── IDLE ── */
+.idle-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 .idle-icon{width:80px;height:80px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
 .idle-icon svg{width:36px;height:36px;color:var(--border)}
-.idle-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px;text-align:center}
-.idle-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:280px}
+.idle-title{font-family:var(--font-h);font-size:24px;font-weight:800;margin-bottom:8px}
+.idle-sub{font-size:14px;color:var(--text2);line-height:1.5;max-width:280px}
 .idle-dot-row{display:flex;align-items:center;gap:10px;margin-top:20px;font-size:13px;font-weight:600;color:var(--success)}
 .idle-dot{width:10px;height:10px;border-radius:50%;background:var(--success);animation:pulseDot 2s ease infinite}
 
-/* FLOOD ALERT */
-#pg-flood{background:var(--bg)}
+/* ── PROFILE ── */
+.profile-pad{padding:24px;padding-top:max(env(safe-area-inset-top),68px);padding-bottom:40px}
+.profile-title{font-family:var(--font-h);font-size:26px;font-weight:800;margin-bottom:4px}
+.profile-sub{font-size:14px;color:var(--text2);margin-bottom:28px}
+
+.fi{position:relative;margin-bottom:24px}
+.fi input{width:100%;font-family:var(--font-b);font-size:16px;font-weight:500;color:var(--text);background:transparent;border:none;border-bottom:1.5px solid var(--border);padding:24px 0 10px;outline:none;transition:border-color .3s;-webkit-appearance:none;border-radius:0}
+.fi label{position:absolute;left:0;top:24px;font-size:16px;font-weight:400;color:var(--text2);pointer-events:none;transition:all .3s cubic-bezier(.16,1,.3,1)}
+.fi input:focus~label,.fi input:not(:placeholder-shown)~label{top:2px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+.fi input:focus{border-bottom-color:var(--accent)}
+
+.section-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;margin-top:8px}
+
+.nb-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.nb-row{display:flex;gap:10px;align-items:center}
+.nb-row input{flex:1;font-family:var(--font-b);font-size:16px;font-weight:500;color:var(--text);background:transparent;border:none;border-bottom:1.5px solid var(--border);padding:12px 0;outline:none;-webkit-appearance:none;border-radius:0;transition:border-color .3s}
+.nb-row input:focus{border-bottom-color:var(--accent)}
+.nb-rm{width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:18px;color:var(--text2)}
+.nb-rm:active{background:var(--accent-soft);color:var(--accent)}
+.nb-add{font-size:14px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;padding:8px 0}
+
+.btn-save{width:100%;height:56px;background:var(--accent);color:#fff;border:none;border-radius:16px;font-family:var(--font-b);font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;transition:transform .1s}
+.btn-save:active:not(:disabled){transform:scale(.97)}
+.btn-save:disabled{opacity:.5;cursor:default}
+
+.toast{position:fixed;top:max(env(safe-area-inset-top),16px);left:50%;transform:translateX(-50%) translateY(-80px);z-index:20000;background:var(--text);color:var(--white);font-size:14px;font-weight:600;padding:14px 24px;border-radius:14px;white-space:nowrap;transition:transform .35s cubic-bezier(.16,1,.3,1);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── FLOOD ── */
+.flood-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 .flood-icon{width:80px;height:80px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
 .flood-icon svg{width:40px;height:40px;color:var(--accent)}
-.flood-title{font-family:var(--font-h);font-size:28px;font-weight:900;color:var(--accent);margin-bottom:8px;text-align:center;line-height:1.2}
-.flood-sub{font-size:15px;color:var(--text2);margin-bottom:36px;text-align:center;max-width:300px;line-height:1.5}
+.flood-title{font-family:var(--font-h);font-size:28px;font-weight:900;color:var(--accent);margin-bottom:8px;line-height:1.2}
+.flood-sub{font-size:15px;color:var(--text2);margin-bottom:36px;max-width:300px;line-height:1.5}
 .flood-btns{display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px}
 .flood-btns button{width:100%;height:64px;border:none;border-radius:16px;font-family:var(--font-b);font-size:16px;font-weight:700;cursor:pointer;transition:transform .1s}
 .flood-btns button:active:not(:disabled){transform:scale(.96)}
@@ -51,75 +80,95 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 .fb-help{background:var(--accent);color:#fff;box-shadow:0 6px 24px rgba(196,57,28,.2)}
 .fb-safe{background:var(--success);color:#fff;box-shadow:0 6px 24px rgba(74,124,89,.15)}
 
-/* WAITING */
-.wait-icon{width:80px;height:80px;border-radius:50%;background:var(--amber-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.wait-icon svg{width:36px;height:36px;color:var(--amber)}
-.wait-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px;text-align:center}
-.wait-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:300px;margin-bottom:8px}
-.wait-status{font-size:13px;font-weight:700;color:var(--amber);background:var(--amber-soft);padding:8px 20px;border-radius:50px;margin-top:12px}
-
-/* HELP COMING */
-.coming-icon{width:80px;height:80px;border-radius:50%;background:var(--success-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.coming-icon svg{width:36px;height:36px;color:var(--success)}
-.coming-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--success);margin-bottom:8px;text-align:center}
-.coming-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:300px}
-
-/* SAFE */
-.safe-icon{width:80px;height:80px;border-radius:50%;background:var(--success-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.safe-icon svg{width:36px;height:36px;color:var(--success)}
-.safe-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--success);margin-bottom:8px;text-align:center}
-.safe-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:300px}
+/* ── STATUS SCREENS ── */
+.status-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.status-icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.status-icon svg{width:36px;height:36px}
+.status-title{font-family:var(--font-h);font-size:24px;font-weight:800;margin-bottom:8px}
+.status-sub{font-size:14px;color:var(--text2);line-height:1.5;max-width:300px}
+.status-pill{font-size:13px;font-weight:700;padding:8px 20px;border-radius:50px;margin-top:12px}
 
 .footer{position:fixed;bottom:max(env(safe-area-inset-bottom),8px);left:0;right:0;text-align:center;font-size:11px;color:var(--border);z-index:10}
 </style>
 </head>
 <body>
 
-<button class="back" id="back-btn" onclick="window.history.back()">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-</button>
+<button class="top-btn" id="btn-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button>
+<button class="top-btn" id="btn-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
 
-<!-- IDLE: no alert active -->
+<!-- IDLE -->
 <div class="screen active" id="pg-idle">
-  <div class="idle-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-  <div class="idle-title r r1">Hi Anh</div>
-  <div class="idle-sub r r2">No active alerts. We're monitoring your area and will notify you immediately if a disaster is detected.</div>
-  <div class="idle-dot-row r r3"><span class="idle-dot"></span>System Active</div>
+  <div class="idle-center">
+    <div class="idle-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div class="idle-title r r1">Hi Anh</div>
+    <div class="idle-sub r r2">No active alerts. We're monitoring your area and will notify you immediately if a disaster is detected.</div>
+    <div class="idle-dot-row r r3"><span class="idle-dot"></span>System Active</div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="pg-profile">
+  <div class="profile-pad">
+    <div class="profile-title r">My Profile</div>
+    <div class="profile-sub r r1">Update your information and emergency contacts.</div>
+
+    <div class="fi r r2"><input id="f-name" type="text" placeholder=" " value="Anh Do"/><label>Full name</label></div>
+    <div class="fi r r2"><input id="f-phone" type="tel" placeholder=" " value="+19526668652"/><label>Phone number</label></div>
+    <div class="fi r r3"><input id="f-address" type="text" placeholder=" " value="742 Evergreen St, San Antonio, TX 78201"/><label>Address</label></div>
+    <div class="fi r r3"><input id="f-floor" type="number" placeholder=" " value="3"/><label>Floor</label></div>
+    <div class="fi r r3"><input id="f-disability" type="text" placeholder=" " value="Mobility Impairment"/><label>Disability</label></div>
+    <div class="fi r r4"><input id="f-meds" type="text" placeholder=" " value="Insulin, Metformin"/><label>Medications</label></div>
+
+    <div class="section-label r r4">Neighbor Phone Numbers</div>
+    <div class="nb-list" id="nb-list"></div>
+    <button class="nb-add" id="nb-add" type="button">+ Add neighbor</button>
+
+    <button class="btn-save" id="btn-save">Save Changes</button>
+  </div>
 </div>
 
 <!-- FLOOD ALERT -->
 <div class="screen" id="pg-flood">
-  <div class="flood-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-  <div class="flood-title r r1">Flood Watch Detected<br>In Your Area</div>
-  <div class="flood-sub r r2">Do you need help evacuating?</div>
-  <div class="flood-btns r r3">
-    <button class="fb-help" id="btn-help">I NEED HELP</button>
-    <button class="fb-safe" id="btn-safe">I AM SAFE</button>
+  <div class="flood-center">
+    <div class="flood-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div class="flood-title r r1">Flood Watch Detected<br>In Your Area</div>
+    <div class="flood-sub r r2">Do you need help evacuating?</div>
+    <div class="flood-btns r r3">
+      <button class="fb-help" id="btn-help">I NEED HELP</button>
+      <button class="fb-safe" id="btn-safe">I AM SAFE</button>
+    </div>
   </div>
 </div>
 
-<!-- WAITING for neighbor -->
+<!-- WAITING -->
 <div class="screen" id="pg-waiting">
-  <div class="wait-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
-  <div class="wait-title r r1">Help requested</div>
-  <div class="wait-sub r r2">Your neighbors have been notified. Waiting for someone to respond...</div>
-  <div class="wait-status r r3">Waiting for neighbor</div>
+  <div class="status-center">
+    <div class="status-icon r" style="background:var(--amber-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--amber)"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+    <div class="status-title r r1">Help requested</div>
+    <div class="status-sub r r2">Your neighbors have been notified. Waiting for someone to respond...</div>
+    <div class="status-pill r r3" style="color:var(--amber);background:var(--amber-soft)">Waiting for neighbor</div>
+  </div>
 </div>
 
 <!-- NEIGHBOR EN ROUTE -->
 <div class="screen" id="pg-coming">
-  <div class="coming-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-  <div class="coming-title r r1">Help is on the way!</div>
-  <div class="coming-sub r r2">A neighbor is coming to help you. Stay where you are if it is safe to do so.</div>
+  <div class="status-center">
+    <div class="status-icon r" style="background:var(--success-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--success)"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+    <div class="status-title r r1" style="color:var(--success)">Help is on the way!</div>
+    <div class="status-sub r r2">A neighbor is coming to help you. Stay where you are if it is safe to do so.</div>
+  </div>
 </div>
 
 <!-- SAFE -->
 <div class="screen" id="pg-safe">
-  <div class="safe-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
-  <div class="safe-title r r1">You are safe</div>
-  <div class="safe-sub r r2">You have been marked safe. Stay alert and follow local emergency guidance.</div>
+  <div class="status-center">
+    <div class="status-icon r" style="background:var(--success-soft)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+    <div class="status-title r r1" style="color:var(--success)">You are safe</div>
+    <div class="status-sub r r2">You have been marked safe. Stay alert and follow local emergency guidance.</div>
+  </div>
 </div>
 
+<div class="toast" id="toast"></div>
 <div class="footer" id="footer">Last updated: --:--:--</div>
 
 <script>
@@ -130,16 +179,83 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
   document.getElementById(id).classList.add('active');
   currentScreen=id;
+  document.getElementById('btn-back').classList.toggle('show',id==='pg-profile');
+  document.getElementById('btn-settings').classList.toggle('show',id==='pg-idle');
 }
 
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}
+
+function fmtPhone(inp){var r=inp.value.replace(/[^\d]/g,'');if(!r){inp.value='';return}if(r[0]!=='1')r='1'+r;r=r.substring(0,11);inp.value='+'+r}
+
+// ── NAVIGATION ──
+document.getElementById('btn-settings').addEventListener('click',function(){loadProfile();showScreen('pg-profile')});
+document.getElementById('btn-back').addEventListener('click',function(){showScreen('pg-idle')});
+
+// ── PROFILE ──
+function loadProfile(){
+  fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){
+    var users=Array.isArray(d)?d:(d.users||[]);
+    var me=users.find(function(u){return u.id===UID});
+    if(!me)return;
+    document.getElementById('f-name').value=me.name||'';
+    document.getElementById('f-phone').value=me.phone||'';
+    document.getElementById('f-address').value=me.address||'';
+    document.getElementById('f-floor').value=me.floor||'';
+    document.getElementById('f-disability').value=me.disability||'';
+    document.getElementById('f-meds').value=me.medications||'';
+    var phones=(me.neighborPhone||'').split(',').map(function(p){return p.trim()}).filter(Boolean);
+    if(phones.length===0)phones=[''];
+    renderNeighborList(phones);
+  }).catch(function(){});
+}
+
+function renderNeighborList(phones){
+  var list=document.getElementById('nb-list');
+  list.textContent='';
+  phones.forEach(function(p){addNeighborRow(p)});
+}
+
+function addNeighborRow(val){
+  var list=document.getElementById('nb-list');
+  var row=document.createElement('div');row.className='nb-row';
+  var inp=document.createElement('input');inp.type='tel';inp.className='nb-input';inp.placeholder='+1';inp.value=val||'';
+  inp.addEventListener('input',function(){fmtPhone(this)});
+  var rm=document.createElement('button');rm.className='nb-rm';rm.type='button';rm.textContent='×';
+  rm.addEventListener('click',function(){if(list.children.length>1)row.remove()});
+  row.appendChild(inp);row.appendChild(rm);list.appendChild(row);
+}
+
+document.getElementById('nb-add').addEventListener('click',function(){addNeighborRow('')});
+
+document.getElementById('btn-save').addEventListener('click',function(){
+  var btn=this;btn.disabled=true;btn.textContent='Saving...';
+  var phones=[];document.querySelectorAll('.nb-input').forEach(function(i){if(i.value.trim())phones.push(i.value.trim())});
+  fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({
+    id:UID,
+    status:undefined
+  })});
+  fetch(API+'/register',{method:'POST',headers:H,body:JSON.stringify({
+    name:document.getElementById('f-name').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),
+    address:document.getElementById('f-address').value.trim(),
+    floor:parseInt(document.getElementById('f-floor').value,10)||0,
+    disability:document.getElementById('f-disability').value.trim(),
+    medications:document.getElementById('f-meds').value.trim(),
+    neighborPhones:phones
+  })}).then(function(r){
+    if(!r.ok)throw new Error(r.status);return r.json();
+  }).then(function(){
+    toast('Profile saved');btn.disabled=false;btn.textContent='Save Changes';
+    showScreen('pg-idle');
+  }).catch(function(){
+    toast('Save failed');btn.disabled=false;btn.textContent='Save Changes';
+  });
+});
+
+// ── POLLING ──
 setInterval(poll,3000);poll();
 
 function poll(){
-  var alertActive=false;
-  fetch(API+'/alert',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){
-    alertActive=!!d.alert;
-  }).catch(function(){});
-
   fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){
     var users=Array.isArray(d)?d:(d.users||[]);
     var me=users.find(function(u){return u.id===UID});
@@ -149,21 +265,19 @@ function poll(){
       var hasAlert=!!ad.alert;
       var s=me.status;
 
-      if(s==='safe' && hadEmergency){
-        showScreen('pg-safe');
-      } else if(s==='safe' && !hadEmergency){
+      if(currentScreen==='pg-profile'){}
+      else if(s==='safe' && hadEmergency) showScreen('pg-safe');
+      else if(s==='safe' && !hadEmergency){
         if(hasAlert && currentScreen==='pg-idle') showScreen('pg-flood');
-        else if(!hasAlert) showScreen('pg-idle');
-      } else if(s==='neighbor_en_route'){
-        hadEmergency=true;
-        showScreen('pg-coming');
-      } else if(s==='uncontacted' && currentScreen==='pg-waiting'){
-        hadEmergency=true;
-      } else if(s==='uncontacted' && currentScreen!=='pg-waiting'){
+        else if(!hasAlert && (currentScreen==='pg-idle'||currentScreen==='pg-flood')) showScreen('pg-idle');
+      }
+      else if(s==='neighbor_en_route'){hadEmergency=true;showScreen('pg-coming')}
+      else if(s==='uncontacted' && currentScreen==='pg-waiting'){hadEmergency=true}
+      else if(s==='uncontacted' && currentScreen!=='pg-waiting'){
         hadEmergency=true;
         if(hasAlert) showScreen('pg-flood');
-        else showScreen('pg-idle');
-      } else {
+      }
+      else{
         if(hasAlert && currentScreen==='pg-idle') showScreen('pg-flood');
         else if(!hasAlert && currentScreen==='pg-flood') showScreen('pg-idle');
       }
@@ -173,6 +287,7 @@ function poll(){
   }).catch(function(){});
 }
 
+// ── ACTIONS ──
 document.getElementById('btn-help').addEventListener('click',function(){
   var btn=this;btn.disabled=true;hadEmergency=true;
   fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'uncontacted'})})
@@ -184,7 +299,7 @@ document.getElementById('btn-help').addEventListener('click',function(){
 });
 
 document.getElementById('btn-safe').addEventListener('click',function(){
-  var btn=this;btn.disabled=true;
+  var btn=this;btn.disabled=true;hadEmergency=true;
   fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'safe'})})
   .then(function(){showScreen('pg-safe')})
   .catch(function(){btn.disabled=false});
