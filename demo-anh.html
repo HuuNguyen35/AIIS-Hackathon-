@@ -114,14 +114,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
     <div class="idle-title r r1">Hi Anh</div>
     <div class="idle-sub r r2">No active alerts. We're monitoring your area and will notify you immediately if a disaster is detected.</div>
     <div class="idle-dot-row r r3"><span class="idle-dot"></span>System Active</div>
-    <div class="nb-section r r4">
-      <div class="nb-label">Your Neighbors</div>
-      <div class="nb-chips" id="nb-chips"></div>
-      <div class="nb-add-row">
-        <input type="tel" id="nb-new" placeholder="+1"/>
-        <button class="nb-add-btn" id="nb-add-btn">Add</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -267,32 +259,6 @@ document.getElementById('btn-save').addEventListener('click',function(){
   });
 });
 
-// ── NEIGHBORS ──
-function loadNeighbors(){
-  fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){
-    var users=Array.isArray(d)?d:(d.users||[]);
-    var me=users.find(function(u){return u.id===UID});
-    if(!me)return;
-    var phones=(me.neighborPhone||'').split(',').map(function(p){return p.trim()}).filter(Boolean);
-    var el=document.getElementById('nb-chips');el.textContent='';
-    phones.forEach(function(p){var c=document.createElement('span');c.className='nb-chip';c.textContent=p;el.appendChild(c)});
-    if(!phones.length){var empty=document.createElement('span');empty.style.cssText='font-size:13px;color:var(--text2)';empty.textContent='No neighbors added yet';el.appendChild(empty)}
-  }).catch(function(){});
-}
-loadNeighbors();
-
-document.getElementById('nb-new').addEventListener('input',function(){fmtPhone(this)});
-document.getElementById('nb-add-btn').addEventListener('click',function(){
-  var inp=document.getElementById('nb-new');
-  var phone=inp.value.trim();
-  if(!phone||phone.length<6)return;
-  var btn=this;btn.disabled=true;btn.textContent='Adding...';
-  fetch(API+'/users/'+UID+'/neighbors',{method:'PATCH',headers:H,body:JSON.stringify({phone:phone})})
-  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
-  .then(function(){inp.value='';loadNeighbors();btn.disabled=false;btn.textContent='Add';toast('Neighbor added')})
-  .catch(function(){btn.disabled=false;btn.textContent='Add';toast('Failed to add')});
-});
-
 // ── POLLING ──
 setInterval(poll,3000);poll();
 
@@ -341,7 +307,8 @@ document.getElementById('btn-help').addEventListener('click',function(){
 
 document.getElementById('btn-safe').addEventListener('click',function(){
   var btn=this;btn.disabled=true;hadEmergency=true;
-  fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'safe'})})
+  fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'uncontacted'})})
+  .then(function(){return fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'safe'})})})
   .then(function(){showScreen('pg-safe')})
   .catch(function(){btn.disabled=false});
 });
