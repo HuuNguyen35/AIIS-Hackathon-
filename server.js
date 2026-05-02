@@ -10,6 +10,7 @@ const pushRouter = require("./routes/pushRegistration");
 const path = require("path");
 const { startPolling } = require("./services/nws");
 const { triggerDisaster, callSingleUser } = require("./services/vapi");
+const { sendNeighborSMS } = require("./services/sms");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,7 @@ app.get("/app", (_req, res) => {
 app.post("/call/:id", async (req, res) => {
   try {
     const user = await callSingleUser(req.params.id);
+    sendNeighborSMS(user);
     res.json({ called: true, user: { id: user.id, name: user.name, phone: user.phone } });
   } catch (err) {
     res.status(err.message === "User not found" ? 404 : 500).json({ error: err.message });
