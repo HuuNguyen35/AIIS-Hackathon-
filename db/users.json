@@ -1,0 +1,47 @@
+[
+  {
+    "id": "seed-001",
+    "name": "Maria Garcia",
+    "address": "742 Evergreen St, San Antonio, TX 78201",
+    "floor": 3,
+    "lat": 29.4685,
+    "lng": -98.5254,
+    "disability": "wheelchair user",
+    "medications": "insulin, metformin",
+    "phone": "+12105551001",
+    "neighborPhone": "+12105551002",
+    "status": "uncontacted",
+    "transcript": "",
+    "updatedAt": "2026-05-01T12:00:00.000Z"
+  },
+  {
+    "id": "seed-002",
+    "name": "James Washington",
+    "address": "1100 Broadway, San Antonio, TX 78215",
+    "floor": 1,
+    "lat": 29.4352,
+    "lng": -98.487,
+    "disability": "visually impaired",
+    "medications": "lisinopril",
+    "phone": "+12105552001",
+    "neighborPhone": "+12105552002",
+    "status": "safe",
+    "transcript": "I'm fine, no help needed.",
+    "updatedAt": "2026-05-01T12:05:00.000Z"
+  },
+  {
+    "id": "seed-003",
+    "name": "Linda Tran",
+    "address": "450 Alamo Plaza, San Antonio, TX 78205",
+    "floor": 5,
+    "lat": 29.426,
+    "lng": -98.4861,
+    "disability": "hearing impaired",
+    "medications": "warfarin, atorvastatin",
+    "phone": "+12105553001",
+    "neighborPhone": "+12105553002",
+    "status": "neighbor_en_route",
+    "transcript": "I need help getting downstairs.",
+    "updatedAt": "2026-05-01T12:10:00.000Z"
+  }
+]
