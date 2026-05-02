@@ -63,9 +63,6 @@ app.post("/notify/:id", async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const smsSent = await sendNeighborSMS(user);
-    if (smsSent) {
-      updateUser(user.id, { status: "neighbor_en_route" });
-    }
     res.json({ notified: true, smsSent, user: { id: user.id, name: user.name } });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -8,152 +8,182 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#F5F0E8;--surface:#EDE8DC;--text:#1A1207;--text2:#8B7355;--accent:#C4391C;--accent-soft:rgba(196,57,28,.08);--success:#4A7C59;--success-soft:rgba(74,124,89,.1);--border:#D4C9B5;--white:#FFFDF9;--font-h:'Playfair Display',serif;--font-b:'Inter',sans-serif}
+:root{--bg:#F5F0E8;--surface:#EDE8DC;--text:#1A1207;--text2:#8B7355;--accent:#C4391C;--accent-soft:rgba(196,57,28,.08);--success:#4A7C59;--success-soft:rgba(74,124,89,.1);--amber:#C0854A;--amber-soft:rgba(192,133,74,.1);--border:#D4C9B5;--white:#FFFDF9;--font-h:'Playfair Display',serif;--font-b:'Inter',sans-serif}
 html,body{height:100%;font-family:var(--font-b);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
-body{display:flex;flex-direction:column;position:relative}
+body{display:flex;flex-direction:column}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E")}
 
-@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseDot{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
 @keyframes pulseRing{0%{transform:scale(.85);opacity:.5}70%,100%{transform:scale(1.25);opacity:0}}
 @keyframes glowBtn{0%,100%{box-shadow:0 8px 40px rgba(196,57,28,.2)}50%{box-shadow:0 8px 56px rgba(196,57,28,.35)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes checkDraw{to{stroke-dashoffset:0}}
 
-.r{animation:rise .55s cubic-bezier(.16,1,.3,1) both}
+.r{animation:rise .5s cubic-bezier(.16,1,.3,1) both}
 .r1{animation-delay:.08s}.r2{animation-delay:.16s}.r3{animation-delay:.24s}
 
-.home{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:max(env(safe-area-inset-top),48px);padding-bottom:40px}
-.home-name{font-family:var(--font-h);font-size:16px;font-weight:700;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
-.system-active{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--success);margin-bottom:12px}
-.system-active .sa-dot{width:10px;height:10px;border-radius:50%;background:var(--success);animation:pulseDot 2s ease infinite}
-.status-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:36px;transition:all .3s}
-.status-pill .dot{width:7px;height:7px;border-radius:50%;animation:pulseDot 2s ease infinite}
-.pill-uncontacted{background:var(--accent-soft);color:var(--accent)}.pill-uncontacted .dot{background:var(--accent)}
-.pill-neighbor_en_route{background:rgba(192,133,74,.1);color:#8B6A30}.pill-neighbor_en_route .dot{background:#C0854A}
-.pill-safe{background:var(--success-soft);color:var(--success)}.pill-safe .dot{background:var(--success)}
-.pill-unknown{background:rgba(139,115,85,.06);color:var(--text2)}.pill-unknown .dot{background:var(--text2)}
+/* back */
+.back{position:fixed;top:max(env(safe-area-inset-top),14px);left:14px;z-index:500;width:44px;height:44px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(26,18,7,.06)}
+.back:active{transform:scale(.9)}
+.back svg{width:18px;height:18px;color:var(--text)}
 
-.help-zone{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:28px}
-.help-ring{position:absolute;width:230px;height:230px;border-radius:50%;border:1.5px solid var(--accent);opacity:0;animation:pulseRing 3s cubic-bezier(.4,0,.2,1) infinite}
-.help-ring:nth-child(2){width:260px;height:260px;animation-delay:1s}
-.help-ring:nth-child(3){width:290px;height:290px;animation-delay:2s}
-.help-btn{position:relative;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 36% 36%,#d9503f,var(--accent) 55%,#8e2510 100%);color:#fff;border:none;font-family:var(--font-h);font-size:18px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;z-index:1;animation:glowBtn 3s ease infinite;box-shadow:0 10px 40px rgba(196,57,28,.22),inset 0 -4px 12px rgba(0,0,0,.12)}
-.help-btn svg{width:32px;height:32px;margin-bottom:2px}
-.help-btn:active:not(:disabled){transform:scale(.92)}
-.help-btn:disabled{background:var(--border);box-shadow:none;animation:none;cursor:default}
-.help-btn:disabled~.help-ring{display:none}
+/* screens */
+.screen{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:max(env(safe-area-inset-top),64px);padding-bottom:max(env(safe-area-inset-bottom),40px);overflow-y:auto}
+.screen.active{display:flex}
 
-.btn-safe-pill{padding:14px 32px;background:transparent;color:var(--success);border:2px solid var(--success);border-radius:50px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;min-height:52px}
-.btn-safe-pill svg{width:18px;height:18px}
-.btn-safe-pill:active:not(:disabled){background:var(--success);color:#fff}
-.btn-safe-pill:disabled{opacity:.4;cursor:default}
+/* IDLE */
+.idle-icon{width:80px;height:80px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.idle-icon svg{width:36px;height:36px;color:var(--border)}
+.idle-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px;text-align:center}
+.idle-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:280px}
+.idle-dot-row{display:flex;align-items:center;gap:10px;margin-top:20px;font-size:13px;font-weight:600;color:var(--success)}
+.idle-dot{width:10px;height:10px;border-radius:50%;background:var(--success);animation:pulseDot 2s ease infinite}
 
-.home-footer{margin-top:auto;padding-top:16px;font-size:11px;color:var(--text2);text-align:center}
-
-/* flood overlay */
-.flood{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
-.flood.show{display:flex;animation:rise .4s cubic-bezier(.16,1,.3,1) both}
-.flood-icon{width:72px;height:72px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
-.flood-icon svg{width:36px;height:36px;color:var(--accent)}
-.flood-title{font-family:var(--font-h);font-size:28px;font-weight:900;color:var(--accent);margin-bottom:8px;line-height:1.2}
-.flood-sub{font-size:15px;color:var(--text2);margin-bottom:36px;max-width:300px;line-height:1.5}
+/* FLOOD ALERT */
+#pg-flood{background:var(--bg)}
+.flood-icon{width:80px;height:80px;border-radius:50%;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.flood-icon svg{width:40px;height:40px;color:var(--accent)}
+.flood-title{font-family:var(--font-h);font-size:28px;font-weight:900;color:var(--accent);margin-bottom:8px;text-align:center;line-height:1.2}
+.flood-sub{font-size:15px;color:var(--text2);margin-bottom:36px;text-align:center;max-width:300px;line-height:1.5}
 .flood-btns{display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px}
 .flood-btns button{width:100%;height:64px;border:none;border-radius:16px;font-family:var(--font-b);font-size:16px;font-weight:700;cursor:pointer;transition:transform .1s}
-.flood-btns button:active{transform:scale(.96)}
-.flood-btns .fb-help{background:var(--accent);color:#fff;box-shadow:0 6px 24px rgba(196,57,28,.2)}
-.flood-btns .fb-safe{background:var(--success);color:#fff;box-shadow:0 6px 24px rgba(74,124,89,.15)}
+.flood-btns button:active:not(:disabled){transform:scale(.96)}
+.flood-btns button:disabled{opacity:.5;cursor:default}
+.fb-help{background:var(--accent);color:#fff;box-shadow:0 6px 24px rgba(196,57,28,.2)}
+.fb-safe{background:var(--success);color:#fff;box-shadow:0 6px 24px rgba(74,124,89,.15)}
 
-/* sent state */
-.sent{display:none;flex-direction:column;align-items:center;text-align:center;width:100%;max-width:320px}
-.sent.show{display:flex;animation:rise .5s cubic-bezier(.16,1,.3,1) both}
-.sent-circle{width:80px;height:80px;border-radius:50%;background:var(--success-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-.sent-circle svg{width:36px;height:36px;color:var(--success)}
-.sent-circle svg polyline{stroke-dasharray:36;stroke-dashoffset:36;animation:checkDraw .5s ease .3s forwards}
-.sent h2{font-family:var(--font-h);font-size:24px;font-weight:800;margin-bottom:8px}
-.sent p{font-size:14px;color:var(--text2);line-height:1.5;margin-bottom:24px}
+/* WAITING */
+.wait-icon{width:80px;height:80px;border-radius:50%;background:var(--amber-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.wait-icon svg{width:36px;height:36px;color:var(--amber)}
+.wait-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--text);margin-bottom:8px;text-align:center}
+.wait-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:300px;margin-bottom:8px}
+.wait-status{font-size:13px;font-weight:700;color:var(--amber);background:var(--amber-soft);padding:8px 20px;border-radius:50px;margin-top:12px}
 
-.safe-toast{display:none;position:fixed;bottom:max(env(safe-area-inset-bottom),24px);left:24px;right:24px;background:var(--success);color:#fff;padding:18px;border-radius:16px;text-align:center;font-weight:700;font-size:15px;z-index:200;animation:rise .4s cubic-bezier(.16,1,.3,1) both}
-.safe-toast.show{display:block}
+/* HELP COMING */
+.coming-icon{width:80px;height:80px;border-radius:50%;background:var(--success-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.coming-icon svg{width:36px;height:36px;color:var(--success)}
+.coming-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--success);margin-bottom:8px;text-align:center}
+.coming-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:300px}
+
+/* SAFE */
+.safe-icon{width:80px;height:80px;border-radius:50%;background:var(--success-soft);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.safe-icon svg{width:36px;height:36px;color:var(--success)}
+.safe-title{font-family:var(--font-h);font-size:24px;font-weight:800;color:var(--success);margin-bottom:8px;text-align:center}
+.safe-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:300px}
+
+.footer{position:fixed;bottom:max(env(safe-area-inset-bottom),8px);left:0;right:0;text-align:center;font-size:11px;color:var(--border);z-index:10}
 </style>
 </head>
 <body>
 
-<div class="flood" id="flood">
-  <div class="flood-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-  <div class="flood-title r">Flood Watch Detected<br>In Your Area</div>
-  <div class="flood-sub r r1">Do you need help evacuating?</div>
-  <div class="flood-btns r r2">
-    <button class="fb-help" id="flood-help">I NEED HELP</button>
-    <button class="fb-safe" id="flood-safe">I AM SAFE</button>
+<button class="back" id="back-btn" onclick="window.history.back()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+</button>
+
+<!-- IDLE: no alert active -->
+<div class="screen active" id="pg-idle">
+  <div class="idle-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+  <div class="idle-title r r1">Hi Anh</div>
+  <div class="idle-sub r r2">No active alerts. We're monitoring your area and will notify you immediately if a disaster is detected.</div>
+  <div class="idle-dot-row r r3"><span class="idle-dot"></span>System Active</div>
+</div>
+
+<!-- FLOOD ALERT -->
+<div class="screen" id="pg-flood">
+  <div class="flood-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+  <div class="flood-title r r1">Flood Watch Detected<br>In Your Area</div>
+  <div class="flood-sub r r2">Do you need help evacuating?</div>
+  <div class="flood-btns r r3">
+    <button class="fb-help" id="btn-help">I NEED HELP</button>
+    <button class="fb-safe" id="btn-safe">I AM SAFE</button>
   </div>
 </div>
 
-<div class="home" id="home-normal">
-  <div class="home-name r">Anh</div>
-  <div class="system-active r r1" id="sys-active"><span class="sa-dot"></span>System Active</div>
-  <div class="status-pill pill-unknown r r2" id="status"><span class="dot"></span><span id="status-text">STANDING BY</span></div>
-  <div class="help-zone r r3">
-    <div class="help-ring"></div><div class="help-ring"></div><div class="help-ring"></div>
-    <button class="help-btn" id="btn-help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg><span>I NEED<br>HELP</span></button>
-  </div>
-  <button class="btn-safe-pill" id="btn-safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button>
-  <div class="home-footer" id="footer">Last updated: --:--:--</div>
+<!-- WAITING for neighbor -->
+<div class="screen" id="pg-waiting">
+  <div class="wait-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+  <div class="wait-title r r1">Help requested</div>
+  <div class="wait-sub r r2">Your neighbors have been notified. Waiting for someone to respond...</div>
+  <div class="wait-status r r3">Waiting for neighbor</div>
 </div>
 
-<div class="sent" id="sent">
-  <div class="sent-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-  <h2>Help is coming</h2>
-  <p>Your neighbors have been notified. Stay where you are if it is safe to do so.</p>
-  <button class="btn-safe-pill" id="btn-safe-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button>
+<!-- NEIGHBOR EN ROUTE -->
+<div class="screen" id="pg-coming">
+  <div class="coming-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+  <div class="coming-title r r1">Help is on the way!</div>
+  <div class="coming-sub r r2">A neighbor is coming to help you. Stay where you are if it is safe to do so.</div>
 </div>
 
-<div class="safe-toast" id="safe-toast">You have been marked safe. Stay alert.</div>
+<!-- SAFE -->
+<div class="screen" id="pg-safe">
+  <div class="safe-icon r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+  <div class="safe-title r r1">You are safe</div>
+  <div class="safe-sub r r2">You have been marked safe. Stay alert and follow local emergency guidance.</div>
+</div>
+
+<div class="footer" id="footer">Last updated: --:--:--</div>
 
 <script>
 var API=window.location.origin,H={'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},UID='demo-anh';
-var LABELS={uncontacted:'HELP REQUESTED',neighbor_en_route:'NEIGHBOR EN ROUTE',safe:'SAFE'};
+var currentScreen='pg-idle';
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  currentScreen=id;
+}
 
 setInterval(poll,3000);poll();
 
 function poll(){
+  var alertActive=false;
   fetch(API+'/alert',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){
-    if(d.alert)document.getElementById('flood').classList.add('show');
-    else document.getElementById('flood').classList.remove('show');
+    alertActive=!!d.alert;
   }).catch(function(){});
+
   fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){
-    var users=Array.isArray(d)?d:(d.users||[]);var me=users.find(function(u){return u.id===UID});
-    if(me){var p=document.getElementById('status');p.className='status-pill pill-'+(me.status||'unknown');document.getElementById('status-text').textContent=LABELS[me.status]||'STANDING BY'}
-    document.getElementById('footer').textContent='Last updated: '+new Date().toLocaleTimeString();
+    var users=Array.isArray(d)?d:(d.users||[]);
+    var me=users.find(function(u){return u.id===UID});
+    if(!me)return;
+
+    fetch(API+'/alert',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(ad){
+      var hasAlert=!!ad.alert;
+      var s=me.status;
+
+      if(s==='safe'){
+        showScreen('pg-safe');
+      } else if(s==='neighbor_en_route'){
+        showScreen('pg-coming');
+      } else if(s==='uncontacted' && currentScreen==='pg-waiting'){
+        // stay on waiting
+      } else if(s==='uncontacted' && currentScreen!=='pg-waiting'){
+        if(hasAlert) showScreen('pg-flood');
+        else showScreen('pg-idle');
+      } else {
+        if(hasAlert && currentScreen==='pg-idle') showScreen('pg-flood');
+        else if(!hasAlert && currentScreen==='pg-flood') showScreen('pg-idle');
+      }
+
+      document.getElementById('footer').textContent='Last updated: '+new Date().toLocaleTimeString();
+    }).catch(function(){});
   }).catch(function(){});
 }
 
-function sendHelp(){
-  document.getElementById('btn-help').disabled=true;
+document.getElementById('btn-help').addEventListener('click',function(){
+  var btn=this;btn.disabled=true;
   fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'uncontacted'})})
   .then(function(r){return r.json()})
   .then(function(){
-    document.getElementById('home-normal').style.display='none';
-    document.getElementById('sent').classList.add('show');
-    document.getElementById('flood').classList.remove('show');
+    showScreen('pg-waiting');
     fetch(API+'/notify/'+UID,{method:'POST',headers:H}).catch(function(){});
-  }).catch(function(){document.getElementById('btn-help').disabled=false});
-}
+  }).catch(function(){btn.disabled=false});
+});
 
-function markSafe(){
+document.getElementById('btn-safe').addEventListener('click',function(){
+  var btn=this;btn.disabled=true;
   fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'safe'})})
-  .then(function(){
-    document.getElementById('flood').classList.remove('show');
-    var t=document.getElementById('safe-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000);
-    poll();
-  }).catch(function(){});
-}
-
-document.getElementById('flood-help').addEventListener('click',sendHelp);
-document.getElementById('btn-help').addEventListener('click',sendHelp);
-document.getElementById('flood-safe').addEventListener('click',markSafe);
-document.getElementById('btn-safe').addEventListener('click',markSafe);
-document.getElementById('btn-safe-2').addEventListener('click',markSafe);
+  .then(function(){showScreen('pg-safe')})
+  .catch(function(){btn.disabled=false});
+});
 </script>
 </body>
 </html>
