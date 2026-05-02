@@ -41,6 +41,18 @@ app.get("/neighbor", (_req, res) => {
   res.sendFile(path.join(__dirname, "neighbor.html"));
 });
 
+app.get("/demo/anh", (_req, res) => {
+  res.sendFile(path.join(__dirname, "demo-anh.html"));
+});
+
+app.get("/demo/tin", (_req, res) => {
+  res.sendFile(path.join(__dirname, "demo-tin.html"));
+});
+
+app.get("/demo/gavin", (_req, res) => {
+  res.sendFile(path.join(__dirname, "demo-gavin.html"));
+});
+
 app.get("/alert", (_req, res) => {
   res.json({ alert: getCurrentAlert() });
 });
