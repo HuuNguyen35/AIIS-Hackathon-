@@ -66,7 +66,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 <div class="toast" id="toast"></div>
 
 <script>
-var API=window.location.origin,H={'Content-Type':'application/json','ngrok-skip-browser-warning':'1'};
+var API=window.location.origin,H={'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},seenIds={};
 
 setInterval(poll,3000);poll();
 
@@ -74,9 +74,10 @@ function poll(){
   fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){
     var u=Array.isArray(d)?d:(d.users||[]);
     var active=u.filter(function(x){return x.status==='uncontacted'||x.status==='neighbor_en_route'});
-    var safe=u.filter(function(x){return x.status==='safe'});
+    active.forEach(function(x){if(!seenIds[x.id])seenIds[x.id]=true});
+    var resolved=u.filter(function(x){return x.status==='safe'&&seenIds[x.id]});
     document.getElementById('count').textContent=active.length+' active';
-    renderList(active,safe);
+    renderList(active,resolved);
   }).catch(function(){});
 }
 
