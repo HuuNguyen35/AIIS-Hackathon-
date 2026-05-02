@@ -33,6 +33,10 @@ app.get("/app", (_req, res) => {
   res.sendFile(path.join(__dirname, "mobile-app.html"));
 });
 
+app.get("/v2", (_req, res) => {
+  res.sendFile(path.join(__dirname, "webapp", "index.html"));
+});
+
 app.get("/neighbor", (_req, res) => {
   res.sendFile(path.join(__dirname, "neighbor.html"));
 });

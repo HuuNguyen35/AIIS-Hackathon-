@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>BLOCK</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F5F0E8;--surface:#EDE8DC;--text:#1A1207;--text2:#8B7355;
+  --accent:#C4391C;--accent-soft:rgba(196,57,28,.08);--success:#4A7C59;
+  --success-soft:rgba(74,124,89,.1);--border:#D4C9B5;--white:#FFFDF9;
+  --font-h:'Playfair Display',serif;--font-b:'Inter',sans-serif;
+}
+html,body{height:100%;font-family:var(--font-b);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{display:flex;flex-direction:column}
+
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E")}
+
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulseDot{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+@keyframes pulseRing{0%{transform:scale(.85);opacity:.5}70%,100%{transform:scale(1.25);opacity:0}}
+@keyframes glowBtn{0%,100%{box-shadow:0 8px 40px rgba(196,57,28,.2)}50%{box-shadow:0 8px 56px rgba(196,57,28,.35)}}
+@keyframes checkDraw{to{stroke-dashoffset:0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.r{animation:rise .55s cubic-bezier(.16,1,.3,1) both}
+.r1{animation-delay:.06s}.r2{animation-delay:.12s}.r3{animation-delay:.18s}
+.r4{animation-delay:.24s}.r5{animation-delay:.3s}.r6{animation-delay:.36s}
+.r7{animation-delay:.42s}.r8{animation-delay:.48s}
+
+.screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;background:var(--bg);flex-direction:column}
+.screen.active{display:flex}
+
+#mountain-overlay{position:fixed;inset:0;z-index:10000;pointer-events:none;display:none}
+#mountain-overlay.animating{display:block}
+#mountain-svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
+
+.back{position:fixed;top:max(env(safe-area-inset-top),14px);left:14px;z-index:500;width:44px;height:44px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(26,18,7,.06)}
+.back:active{transform:scale(.9)}
+.back svg{width:18px;height:18px;color:var(--text)}
+.back.show{display:flex}
+
+.toast{position:fixed;top:max(env(safe-area-inset-top),16px);left:50%;transform:translateX(-50%) translateY(-100px);z-index:20000;background:var(--text);color:var(--white);font-size:14px;font-weight:600;padding:14px 24px;border-radius:14px;white-space:nowrap;transition:transform .35s cubic-bezier(.16,1,.3,1);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+.landing-pad{padding:0 24px;padding-top:max(env(safe-area-inset-top),60px);padding-bottom:40px;flex:1;display:flex;flex-direction:column;align-items:center}
+.landing-mark{font-family:var(--font-b);font-size:13px;font-weight:700;color:var(--text2);letter-spacing:4px;text-transform:uppercase;margin-bottom:40px}
+.landing-heading{font-family:var(--font-h);font-size:28px;font-weight:800;text-align:center;margin-bottom:32px;line-height:1.2}
+.role-cards{display:flex;flex-direction:column;gap:14px;width:100%}
+.role-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;display:flex;align-items:center;gap:18px;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.role-card:active{transform:scale(.97);box-shadow:0 4px 16px rgba(26,18,7,.08)}
+.role-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.role-icon svg{width:26px;height:26px}
+.role-icon.ri-help{background:var(--accent-soft);color:var(--accent)}
+.role-icon.ri-vol{background:var(--success-soft);color:var(--success)}
+.role-icon.ri-resp{background:rgba(139,115,85,.1);color:var(--text2)}
+.role-info h3{font-family:var(--font-h);font-size:20px;font-weight:700;margin-bottom:2px}
+.role-info p{font-size:13px;color:var(--text2);line-height:1.4}
+
+.page-pad{padding:0 24px;padding-top:max(env(safe-area-inset-top),68px);padding-bottom:40px;flex:1;display:flex;flex-direction:column}
+.pg-heading{font-family:var(--font-h);font-size:30px;font-weight:800;line-height:1.15;margin-bottom:8px}
+.pg-sub{font-size:14px;color:var(--text2);line-height:1.5;margin-bottom:36px}
+
+.fi{position:relative;margin-bottom:28px}
+.fi input,.fi textarea{width:100%;font-family:var(--font-b);font-size:17px;font-weight:500;color:var(--text);background:transparent;border:none;border-bottom:1.5px solid var(--border);padding:26px 0 10px;outline:none;transition:border-color .3s;-webkit-appearance:none;border-radius:0}
+.fi textarea{resize:none;min-height:100px;line-height:1.6}
+.fi label{position:absolute;left:0;top:26px;font-size:17px;font-weight:400;color:var(--text2);pointer-events:none;transition:all .3s cubic-bezier(.16,1,.3,1)}
+.fi input:focus~label,.fi input:not(:placeholder-shown)~label,.fi textarea:focus~label,.fi textarea:not(:placeholder-shown)~label{top:4px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+.fi input:focus,.fi textarea:focus{border-bottom-color:var(--accent)}
+.fi .fi-line{position:absolute;bottom:0;left:0;right:0;height:1.5px;background:var(--accent);transform:scaleX(0);transition:transform .3s cubic-bezier(.16,1,.3,1);transform-origin:left}
+.fi input:focus~.fi-line,.fi textarea:focus~.fi-line{transform:scaleX(1)}
+
+.btn{width:100%;height:56px;background:var(--accent);color:#fff;border:none;border-radius:16px;font-family:var(--font-b);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s,opacity .2s;margin-top:auto}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn-outline{background:transparent;color:var(--text);border:1.5px solid var(--border)}
+.btn-success{background:var(--success)}
+.btn-row{display:flex;gap:10px}.btn-row .btn{flex:1;margin-top:0}
+.sp{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+
+.chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.chip-card{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .25s;text-align:center}
+.chip-card svg{width:28px;height:28px;color:var(--text2);transition:color .25s}
+.chip-card span{font-size:13px;font-weight:600;color:var(--text2);transition:color .25s}
+.chip-card:active{transform:scale(.96)}
+.chip-card.on{border-color:var(--accent);background:var(--accent-soft)}
+.chip-card.on svg{color:var(--accent)}
+.chip-card.on span{color:var(--accent)}
+
+.toggle-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.toggle-card{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .25s}
+.toggle-card:active{transform:scale(.97)}
+.toggle-card.on{border-color:var(--accent);background:var(--accent-soft)}
+.toggle-card .tc-icon{width:42px;height:42px;border-radius:12px;background:rgba(139,115,85,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .25s}
+.toggle-card.on .tc-icon{background:var(--accent-soft)}
+.toggle-card svg{width:20px;height:20px;color:var(--text2);transition:color .25s}
+.toggle-card.on svg{color:var(--accent)}
+.toggle-card span{font-size:15px;font-weight:600}
+
+.stepper{display:flex;align-items:center;justify-content:center;gap:28px;margin:20px 0 32px}
+.stepper-btn{width:52px;height:52px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:24px;color:var(--text);transition:all .15s}
+.stepper-btn:active{transform:scale(.9);background:var(--border)}
+.stepper-val{font-family:var(--font-h);font-size:64px;font-weight:900;min-width:80px;text-align:center;line-height:1}
+
+.nb-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.nb-row{display:flex;gap:10px;align-items:center}
+.nb-row input{flex:1;font-family:var(--font-b);font-size:16px;font-weight:500;color:var(--text);background:transparent;border:none;border-bottom:1.5px solid var(--border);padding:12px 0;outline:none;transition:border-color .3s;-webkit-appearance:none;border-radius:0}
+.nb-row input:focus{border-bottom-color:var(--accent)}
+.nb-rm{width:36px;height:36px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:18px;color:var(--text2)}
+.nb-rm:active{background:var(--accent-soft);color:var(--accent)}
+.nb-add{font-size:14px;font-weight:600;color:var(--accent);background:none;border:none;cursor:pointer;padding:8px 0;text-align:left}
+
+.success-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 28px}
+.success-circle{width:88px;height:88px;border-radius:50%;background:var(--success-soft);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.success-circle svg{width:40px;height:40px;color:var(--success)}
+.success-circle svg polyline{stroke-dasharray:36;stroke-dashoffset:36;animation:checkDraw .5s ease .3s forwards}
+.success-title{font-family:var(--font-h);font-size:28px;font-weight:800;margin-bottom:8px}
+.success-sub{font-size:15px;color:var(--text2);line-height:1.6;max-width:280px;margin-bottom:40px}
+
+.home-pad{padding:0 24px;padding-top:max(env(safe-area-inset-top),48px);padding-bottom:40px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.home-name{font-family:var(--font-h);font-size:14px;font-weight:600;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:none}
+.status-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:50px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:36px;transition:all .3s}
+.status-pill .dot{width:7px;height:7px;border-radius:50%;animation:pulseDot 2s ease infinite}
+.pill-uncontacted{background:var(--accent-soft);color:var(--accent)}.pill-uncontacted .dot{background:var(--accent)}
+.pill-neighbor_en_route{background:rgba(192,133,74,.1);color:#8B6A30}.pill-neighbor_en_route .dot{background:#C0854A}
+.pill-safe{background:var(--success-soft);color:var(--success)}.pill-safe .dot{background:var(--success)}
+.pill-unknown{background:rgba(139,115,85,.06);color:var(--text2)}.pill-unknown .dot{background:var(--text2)}
+
+.help-zone{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+.help-ring{position:absolute;width:230px;height:230px;border-radius:50%;border:1.5px solid var(--accent);opacity:0;animation:pulseRing 3s cubic-bezier(.4,0,.2,1) infinite}
+.help-ring:nth-child(2){width:260px;height:260px;animation-delay:1s}
+.help-ring:nth-child(3){width:290px;height:290px;animation-delay:2s}
+.help-btn{position:relative;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 36% 36%,#d9503f,var(--accent) 55%,#8e2510 100%);color:#fff;border:none;font-family:var(--font-h);font-size:20px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;z-index:1;animation:glowBtn 3s ease infinite;box-shadow:0 10px 40px rgba(196,57,28,.22),inset 0 -4px 12px rgba(0,0,0,.12)}
+.help-btn svg{width:36px;height:36px;margin-bottom:2px}
+.help-btn:active:not(:disabled){transform:scale(.92)}
+.help-btn:disabled{background:var(--border);box-shadow:none;animation:none;cursor:default}
+.help-btn:disabled~.help-ring{display:none}
+
+.btn-safe-pill{padding:14px 32px;background:transparent;color:var(--success);border:2px solid var(--success);border-radius:50px;font-family:var(--font-b);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;min-height:52px}
+.btn-safe-pill svg{width:18px;height:18px}
+.btn-safe-pill:active:not(:disabled){background:var(--success);color:#fff}
+.btn-safe-pill:disabled{opacity:.4;cursor:default}
+
+.sent-wrap{display:none;text-align:center;width:100%;max-width:320px;margin-bottom:24px}
+.sent-wrap.show{display:block;animation:rise .5s cubic-bezier(.16,1,.3,1) both}
+.sent-wrap .success-circle{margin:0 auto 20px}
+.sent-title{font-family:var(--font-h);font-size:26px;font-weight:800;margin-bottom:16px}
+.sent-list{list-style:none;text-align:left}
+.sent-list li{padding:12px 0;font-size:14px;color:var(--text2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sent-list li:last-child{border-bottom:none}
+.sent-list li svg{width:18px;height:18px;flex-shrink:0;color:var(--success)}
+.home-footer{margin-top:auto;padding-top:16px;font-size:11px;color:var(--text2);letter-spacing:.5px;text-align:center}
+.home-error{margin-top:12px;padding:14px;background:var(--accent-soft);border-radius:14px;color:var(--accent);font-size:13px;font-weight:600;display:none;text-align:center;animation:shake .3s ease}
+
+.standby-pad{padding:0 24px;padding-top:max(env(safe-area-inset-top),68px);padding-bottom:40px;flex:1;display:flex;flex-direction:column}
+.standby-heading{font-family:var(--font-h);font-size:26px;font-weight:800;margin-bottom:20px}
+.alert-list{display:flex;flex-direction:column;gap:12px;flex:1}
+.alert-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px}
+.alert-card h4{font-family:var(--font-h);font-size:18px;font-weight:700;margin-bottom:4px}
+.ac-addr{font-size:13px;color:var(--text2);margin-bottom:8px}
+.ac-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ac-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;letter-spacing:.5px;text-transform:uppercase}
+.ac-badge.b-dis{background:var(--accent-soft);color:var(--accent)}
+.ac-badge.b-status{background:rgba(139,115,85,.08);color:var(--text2)}
+.ac-btns{display:flex;gap:8px}
+.ac-btns button{flex:1;padding:12px;border-radius:12px;font-family:var(--font-b);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:transform .1s}
+.ac-btns button:active{transform:scale(.96)}
+.ab-onway{background:var(--accent);color:#fff}
+.ab-safe{background:var(--success);color:#fff}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text2);gap:12px}
+.empty-dot{width:12px;height:12px;border-radius:50%;background:var(--success);animation:pulseDot 2s ease infinite}
+
+.resp-pad{padding:0 24px;padding-top:max(env(safe-area-inset-top),68px);padding-bottom:100px;flex:1;display:flex;flex-direction:column}
+.resp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.resp-header h2{font-family:var(--font-h);font-size:24px;font-weight:800}
+.resp-count{font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:6px 14px;border-radius:10px}
+.case-list{display:flex;flex-direction:column;gap:12px;flex:1}
+.case-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px}
+.case-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.case-card h4{font-family:var(--font-h);font-size:18px;font-weight:700}
+.case-floor{font-size:12px;font-weight:700;color:var(--text2);background:rgba(139,115,85,.08);padding:3px 10px;border-radius:8px}
+.case-addr{font-size:13px;color:var(--text2);margin-bottom:8px}
+.case-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.case-meds{font-size:12px;color:var(--text2);margin-bottom:6px;font-style:italic}
+.case-transcript{font-size:12px;color:var(--text2);background:rgba(139,115,85,.06);padding:8px 12px;border-radius:10px;margin-bottom:6px;line-height:1.5}
+.case-time{font-size:11px;color:var(--border)}
+.sim-btn{position:fixed;bottom:max(env(safe-area-inset-bottom),16px);left:24px;right:24px;z-index:600;height:56px;background:var(--accent);color:#fff;border:none;border-radius:16px;font-family:var(--font-b);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(196,57,28,.2);transition:transform .1s}
+.sim-btn:active{transform:scale(.97)}
+
+.gps-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px}
+.gps-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+.gps-text{font-size:16px;font-weight:500;color:var(--text2)}
+.gps-coords{font-size:13px;color:var(--text2);letter-spacing:.5px}
+
+.confirm-bg{display:none;position:fixed;inset:0;background:rgba(26,18,7,.4);z-index:8000;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.confirm-bg.show{display:flex;animation:fadeIn .2s ease}
+.confirm-card{background:var(--white);border-radius:28px 28px 0 0;padding:32px 24px;padding-bottom:max(env(safe-area-inset-bottom),32px);width:100%;max-width:480px;text-align:center}
+.confirm-card h3{font-family:var(--font-h);font-size:22px;font-weight:800;margin-bottom:8px}
+.confirm-card p{font-size:14px;color:var(--text2);margin-bottom:24px;line-height:1.5}
+.confirm-card .btn-row{display:flex;gap:10px}
+.confirm-card .btn{margin-top:0}
+</style>
+</head>
+<body>
+
+<div id="mountain-overlay"><svg id="mountain-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="0,100 0,45 12,38 25,28 35,35 45,22 55,18 65,25 75,30 85,20 100,35 100,100" fill="#C4391C"/></svg></div>
+<button class="back" id="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button>
+<div class="toast" id="toast"></div>
+
+<div class="screen active" id="pg-landing"><div class="landing-pad">
+  <div class="landing-mark r">BLOCK</div>
+  <div class="landing-heading r r1">How can we<br>help you?</div>
+  <div class="role-cards">
+    <div class="role-card r r2" data-role="help"><div class="role-icon ri-help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg></div><div class="role-info"><h3>I Need Help</h3><p>For individuals who may need evacuation assistance</p></div></div>
+    <div class="role-card r r3" data-role="volunteer"><div class="role-icon ri-vol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><div class="role-info"><h3>I Want to Help</h3><p>For neighbors and volunteers ready to assist</p></div></div>
+    <div class="role-card r r4" data-role="responder"><div class="role-icon ri-resp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="role-info"><h3>First Responder</h3><p>For emergency personnel and dispatchers</p></div></div>
+  </div>
+</div></div>
+
+<div class="screen" id="pg-h1"><div class="page-pad"><div class="pg-heading r">Let's build your emergency profile.</div><div class="pg-sub r r1">This only takes a minute.</div><div class="fi r r2"><input id="h-name" type="text" placeholder=" "/><label>Full name</label><span class="fi-line"></span></div><div class="fi r r3"><input id="h-phone" type="tel" placeholder=" "/><label>Phone number</label><span class="fi-line"></span></div><button class="btn r r4" id="h1-next">Next</button></div></div>
+
+<div class="screen" id="pg-h2"><div class="page-pad"><div class="pg-heading r">Where do you live?</div><div class="pg-sub r r1">So first responders can find you.</div><div class="fi r r2"><input id="h-address" type="text" placeholder=" "/><label>Address</label><span class="fi-line"></span></div><div class="pg-sub r r3" style="margin-bottom:0;font-weight:600;color:var(--text)">Floor number</div><div class="stepper r r4"><button class="stepper-btn" id="floor-minus">−</button><div class="stepper-val" id="floor-val">1</div><button class="stepper-btn" id="floor-plus">+</button></div><button class="btn r r5" id="h2-next">Next</button></div></div>
+
+<div class="screen" id="pg-h3"><div class="page-pad"><div class="pg-heading r">What should responders know?</div><div class="pg-sub r r1">Select any that apply.</div><div class="chip-grid r r2" id="dis-chips"><div class="chip-card on" data-v=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>None</span></div><div class="chip-card" data-v="Mobility Impairment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><span>Mobility</span></div><div class="chip-card" data-v="Visual Impairment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><span>Visual</span></div><div class="chip-card" data-v="Hearing Impairment"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span>Hearing</span></div><div class="chip-card" data-v="Cognitive Disability"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><span>Cognitive</span></div><div class="chip-card" data-v="Medical Equipment Dependent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Medical Equip.</span></div></div><button class="btn r r3" id="h3-next">Next</button></div></div>
+
+<div class="screen" id="pg-h4"><div class="page-pad"><div class="pg-heading r">Any critical medications?</div><div class="pg-sub r r1">List anything a responder should know.</div><div class="fi r r2"><textarea id="h-meds" placeholder=" "></textarea><label>Medications</label></div><div class="btn-row r r3"><button class="btn btn-outline" id="h4-skip" type="button">Skip</button><button class="btn" id="h4-next">Next</button></div></div></div>
+
+<div class="screen" id="pg-h5"><div class="page-pad"><div class="pg-heading r">Who are your neighbors?</div><div class="pg-sub r r1">We'll text them if you need help.</div><div class="nb-list r r2" id="nb-list"><div class="nb-row"><input type="tel" class="nb-input" placeholder="+1"/><button class="nb-rm" type="button">×</button></div><div class="nb-row"><input type="tel" class="nb-input" placeholder="+1"/><button class="nb-rm" type="button">×</button></div></div><button class="nb-add r r3" id="nb-add" type="button">+ Add another neighbor</button><button class="btn r r4" id="h5-next">Next</button></div></div>
+
+<div class="screen" id="pg-h6"><div class="success-center"><div class="success-circle r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="success-title r r1">You're registered.</div><div class="success-sub r r2">We'll contact you automatically if a disaster is detected in your area.</div><button class="btn r r3" id="h6-go">Go to My Emergency Screen</button></div></div>
+
+<div class="screen" id="pg-home"><div class="home-pad"><div class="home-name" id="home-name"></div><div class="status-pill pill-unknown" id="home-status"><span class="dot"></span><span id="home-status-text">STANDING BY</span></div><div id="home-normal"><div class="help-zone"><div class="help-ring"></div><div class="help-ring"></div><div class="help-ring"></div><button class="help-btn" id="btn-help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg><span>I NEED<br>HELP</span></button></div><button class="btn-safe-pill" id="btn-safe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button></div><div class="sent-wrap" id="sent-state"><div class="success-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="sent-title">Help is coming</div><ul class="sent-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Responders notified</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Neighbors alerted</li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Location shared</li></ul></div><button class="btn-safe-pill" id="btn-safe-after" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>I Am Safe</span></button><div class="home-error" id="home-error"></div><div class="home-footer" id="home-footer">Last updated: --:--:--</div></div></div>
+
+<div class="screen" id="pg-v1"><div class="page-pad"><div class="pg-heading r">Join the emergency response network.</div><div class="pg-sub r r1">Your help could save a life.</div><div class="fi r r2"><input id="v-name" type="text" placeholder=" "/><label>Full name</label><span class="fi-line"></span></div><div class="fi r r3"><input id="v-phone" type="tel" placeholder=" "/><label>Phone number</label><span class="fi-line"></span></div><button class="btn r r4" id="v1-next">Next</button></div></div>
+
+<div class="screen" id="pg-v2"><div class="page-pad"><div class="pg-heading r">What help can you offer?</div><div class="pg-sub r r1">Select all that apply.</div><div class="toggle-cards r r2" id="vol-toggles"><div class="toggle-card" data-v="Physical Evacuation"><div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="8.5" cy="7" r="4"/></svg></div><span>Physical Evacuation Assist</span></div><div class="toggle-card" data-v="Transportation"><div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><span>Transportation (have a car)</span></div><div class="toggle-card" data-v="Medical Support"><div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><span>Medical Support</span></div><div class="toggle-card" data-v="General Support"><div class="tc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div><span>General Support</span></div></div><button class="btn r r3" id="v2-next">Next</button></div></div>
+
+<div class="screen" id="pg-v3"><div class="page-pad"><div class="gps-center"><div class="gps-spinner r" id="gps-spinner"></div><div class="gps-text r r1" id="gps-text">Locating you...</div><div class="gps-coords r r2" id="gps-coords"></div><button class="btn r r3" id="v3-next" disabled>Next</button></div></div></div>
+
+<div class="screen" id="pg-v4"><div class="success-center"><div class="success-circle r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="success-title r r1">You're registered as a helper.</div><div class="success-sub r r2">You'll receive a text if someone near you needs help.</div><button class="btn btn-success r r3" id="v4-go">View Nearby Alerts</button></div></div>
+
+<div class="screen" id="pg-standby"><div class="standby-pad"><div class="standby-heading">Nearby Alerts</div><div class="alert-list" id="alert-list"><div class="empty-state"><div class="empty-dot"></div><div>No active alerts in your area</div></div></div></div></div>
+
+<div class="screen" id="pg-r1"><div class="page-pad"><div class="pg-heading r">First Responder Access.</div><div class="pg-sub r r1">View all cases in your area.</div><div class="fi r r2"><input id="r-name" type="text" placeholder=" "/><label>Full name</label><span class="fi-line"></span></div><div class="fi r r3"><input id="r-org" type="text" placeholder=" "/><label>Organization</label><span class="fi-line"></span></div><button class="btn r r4" id="r1-go">Access Responder View</button></div></div>
+
+<div class="screen" id="pg-resp"><div class="resp-pad"><div class="resp-header"><h2>Cases</h2><div class="resp-count" id="resp-count">0</div></div><div class="case-list" id="case-list"></div></div><button class="sim-btn" id="sim-btn">SIMULATE FLOOD WATCH</button></div>
+
+<div class="confirm-bg" id="confirm-dialog"><div class="confirm-card"><h3>Request emergency help?</h3><p>This will alert responders and notify your neighbors.</p><div class="btn-row"><button class="btn btn-outline" id="btn-cancel">Cancel</button><button class="btn" id="btn-confirm">Yes, I Need Help</button></div></div></div>
+
+<script>
+var API=window.location.origin,H={'Content-Type':'application/json','ngrok-skip-browser-warning':'1'};
+var userId=localStorage.getItem('blockUserId'),userName=localStorage.getItem('blockUserName'),userRole=localStorage.getItem('blockRole');
+var volLat=0,volLng=0,hist=[];
+
+function transitionTo(id){
+  var ov=document.getElementById('mountain-overlay'),svg=document.getElementById('mountain-svg');
+  ov.classList.add('animating');svg.style.transition='none';svg.style.transform='translateY(100%)';
+  void svg.offsetWidth;svg.style.transition='transform 300ms cubic-bezier(.4,0,.2,1)';svg.style.transform='translateY(0)';
+  setTimeout(function(){var c=document.querySelector('.screen.active');if(c)hist.push(c.id);show(id);svg.style.transition='transform 300ms cubic-bezier(.4,0,.2,1)';svg.style.transform='translateY(-100%)';setTimeout(function(){ov.classList.remove('animating')},310)},310);
+}
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active');document.getElementById('back-btn').classList.toggle('show',id!=='pg-landing')}
+document.getElementById('back-btn').addEventListener('click',function(){if(hist.length)show(hist.pop())});
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}
+function fmtPhone(i){var r=i.value.replace(/[^\d]/g,'');if(!r){i.value='';return}if(r[0]!=='1')r='1'+r;r=r.substring(0,11);i.value='+'+r}
+document.addEventListener('input',function(e){if(e.target.type==='tel')fmtPhone(e.target)});
+
+function esc(s){var d=document.createElement('div');d.appendChild(document.createTextNode(s==null?'':String(s)));return d.innerHTML}
+function getLocation(){return new Promise(function(resolve){if(!navigator.geolocation)return resolve({lat:0,lng:0});navigator.geolocation.getCurrentPosition(function(p){resolve({lat:p.coords.latitude,lng:p.coords.longitude})},function(){resolve({lat:0,lng:0})},{timeout:8000,enableHighAccuracy:true})})}
+
+document.querySelectorAll('.role-card').forEach(function(c){c.addEventListener('click',function(){var r=this.dataset.role;if(r==='help'){if(userId&&userRole==='help'){hist=['pg-landing'];show('pg-home');startPoll();return}transitionTo('pg-h1')}else if(r==='volunteer')transitionTo('pg-v1');else if(r==='responder')transitionTo('pg-r1')})});
+if(userId&&userRole==='help'){hist=['pg-landing'];show('pg-home');startPoll()}
+
+var hFloor=1;
+document.getElementById('floor-minus').addEventListener('click',function(){if(hFloor>0){hFloor--;document.getElementById('floor-val').textContent=hFloor}});
+document.getElementById('floor-plus').addEventListener('click',function(){hFloor++;document.getElementById('floor-val').textContent=hFloor});
+document.getElementById('h1-next').addEventListener('click',function(){if(document.getElementById('h-name').value.trim()&&document.getElementById('h-phone').value.trim())transitionTo('pg-h2')});
+document.getElementById('h2-next').addEventListener('click',function(){if(document.getElementById('h-address').value.trim())transitionTo('pg-h3')});
+document.querySelectorAll('#dis-chips .chip-card').forEach(function(c){c.addEventListener('click',function(){document.querySelectorAll('#dis-chips .chip-card').forEach(function(x){x.classList.remove('on')});this.classList.add('on')})});
+document.getElementById('h3-next').addEventListener('click',function(){transitionTo('pg-h4')});
+document.getElementById('h4-next').addEventListener('click',function(){transitionTo('pg-h5')});
+document.getElementById('h4-skip').addEventListener('click',function(){transitionTo('pg-h5')});
+
+document.getElementById('nb-add').addEventListener('click',function(){var l=document.getElementById('nb-list'),rw=document.createElement('div');rw.className='nb-row';var inp=document.createElement('input');inp.type='tel';inp.className='nb-input';inp.placeholder='+1';var rm=document.createElement('button');rm.type='button';rm.className='nb-rm';rm.textContent='×';rm.addEventListener('click',function(){rw.remove()});rw.appendChild(inp);rw.appendChild(rm);l.appendChild(rw)});
+document.querySelectorAll('.nb-rm').forEach(function(b){b.addEventListener('click',function(){this.parentElement.remove()})});
+
+document.getElementById('h5-next').addEventListener('click',function(){var btn=this;btn.disabled=true;var disEl=document.querySelector('#dis-chips .chip-card.on');var nbs=[];document.querySelectorAll('.nb-input').forEach(function(i){if(i.value.trim())nbs.push(i.value.trim())});
+getLocation().then(function(loc){return fetch(API+'/register',{method:'POST',headers:H,body:JSON.stringify({name:document.getElementById('h-name').value.trim(),phone:document.getElementById('h-phone').value.trim(),address:document.getElementById('h-address').value.trim(),floor:hFloor,disability:disEl?disEl.dataset.v:'',medications:document.getElementById('h-meds').value.trim(),neighborPhones:nbs,lat:loc.lat,lng:loc.lng})})})
+.then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+.then(function(u){localStorage.setItem('blockUserId',u.id);localStorage.setItem('blockUserName',u.name);localStorage.setItem('blockRole','help');userId=u.id;userName=u.name;userRole='help';transitionTo('pg-h6')})
+.catch(function(){toast('Registration failed');btn.disabled=false})});
+document.getElementById('h6-go').addEventListener('click',function(){hist=['pg-landing'];transitionTo('pg-home');startPoll()});
+
+var LABELS={uncontacted:'HELP REQUESTED',neighbor_en_route:'NEIGHBOR EN ROUTE',safe:'SAFE'},pollTimer=null;
+function startPoll(){document.getElementById('home-name').textContent=userName||'';pollStatus();if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(pollStatus,5000)}
+function pollStatus(){fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){var u=Array.isArray(d)?d:(d.users||[]);var me=u.find(function(x){return x.id===userId});if(me)updateStatus(me.status);document.getElementById('home-footer').textContent='Last updated: '+new Date().toLocaleTimeString()}).catch(function(){})}
+function updateStatus(s){document.getElementById('home-status').className='status-pill pill-'+(s||'unknown');document.getElementById('home-status-text').textContent=LABELS[s]||'STANDING BY'}
+
+document.getElementById('btn-help').addEventListener('click',function(){document.getElementById('confirm-dialog').classList.add('show')});
+document.getElementById('btn-cancel').addEventListener('click',function(){document.getElementById('confirm-dialog').classList.remove('show')});
+document.getElementById('btn-confirm').addEventListener('click',function(){document.getElementById('confirm-dialog').classList.remove('show');sendHelp()});
+
+function sendHelp(){var btn=document.getElementById('btn-help'),err=document.getElementById('home-error');err.style.display='none';btn.disabled=true;
+getLocation().then(function(loc){var b={id:userId,status:'uncontacted'};if(loc.lat)b.lat=loc.lat;if(loc.lng)b.lng=loc.lng;return fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify(b)})})
+.then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+.then(function(){updateStatus('uncontacted');document.getElementById('home-normal').style.display='none';document.getElementById('sent-state').classList.add('show');document.getElementById('btn-safe-after').style.display='';fetch(API+'/call/'+userId,{method:'POST',headers:H}).catch(function(){})})
+.catch(function(e){err.textContent='Failed: '+e.message;err.style.display='block';btn.disabled=false})}
+
+function markSafe(b){b.disabled=true;var s=b.querySelector('span');s.textContent='Updating...';fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:userId,status:'safe'})}).then(function(r){if(!r.ok)throw new Error('e');return r.json()}).then(function(){updateStatus('safe');s.textContent='Marked Safe'}).catch(function(){b.disabled=false;s.textContent='I Am Safe'})}
+document.getElementById('btn-safe').addEventListener('click',function(){markSafe(this)});
+document.getElementById('btn-safe-after').addEventListener('click',function(){markSafe(this)});
+
+document.querySelectorAll('#vol-toggles .toggle-card').forEach(function(c){c.addEventListener('click',function(){this.classList.toggle('on')})});
+document.getElementById('v1-next').addEventListener('click',function(){if(document.getElementById('v-name').value.trim()&&document.getElementById('v-phone').value.trim())transitionTo('pg-v2')});
+document.getElementById('v2-next').addEventListener('click',function(){transitionTo('pg-v3');detectGPS()});
+function detectGPS(){getLocation().then(function(loc){volLat=loc.lat;volLng=loc.lng;var sp=document.getElementById('gps-spinner');sp.style.borderTopColor='var(--success)';sp.style.animation='none';document.getElementById('gps-text').textContent='Location saved.';document.getElementById('gps-coords').textContent=loc.lat.toFixed(4)+', '+loc.lng.toFixed(4);document.getElementById('v3-next').disabled=false})}
+document.getElementById('v3-next').addEventListener('click',function(){var b=this;b.disabled=true;fetch(API+'/register',{method:'POST',headers:H,body:JSON.stringify({name:document.getElementById('v-name').value.trim(),phone:document.getElementById('v-phone').value.trim(),address:'Volunteer',floor:0,disability:'',medications:'',neighborPhone:'',lat:volLat,lng:volLng})}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()}).then(function(u){localStorage.setItem('blockUserId',u.id);localStorage.setItem('blockUserName',u.name);localStorage.setItem('blockRole','volunteer');userId=u.id;userName=u.name;userRole='volunteer';transitionTo('pg-v4')}).catch(function(){toast('Registration failed');b.disabled=false})});
+document.getElementById('v4-go').addEventListener('click',function(){hist=['pg-landing'];transitionTo('pg-standby');startStandbyPoll()});
+
+var sTimer=null;
+function startStandbyPoll(){pollStandby();if(sTimer)clearInterval(sTimer);sTimer=setInterval(pollStandby,5000)}
+function pollStandby(){fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){var u=Array.isArray(d)?d:(d.users||[]);renderAlerts(u.filter(function(x){return x.status==='uncontacted'||x.status==='neighbor_en_route'}))}).catch(function(){})}
+
+function renderAlerts(list){
+  var el=document.getElementById('alert-list');
+  el.textContent='';
+  if(!list.length){var e=document.createElement('div');e.className='empty-state';var dot=document.createElement('div');dot.className='empty-dot';var txt=document.createElement('div');txt.textContent='No active alerts in your area';e.appendChild(dot);e.appendChild(txt);el.appendChild(e);return}
+  list.forEach(function(u){
+    var card=document.createElement('div');card.className='alert-card';
+    var h=document.createElement('h4');h.textContent=u.name;card.appendChild(h);
+    var addr=document.createElement('div');addr.className='ac-addr';addr.textContent=(u.address||'')+' · Floor '+(u.floor||0);card.appendChild(addr);
+    var badges=document.createElement('div');badges.className='ac-badges';
+    if(u.disability){var db=document.createElement('span');db.className='ac-badge b-dis';db.textContent=u.disability;badges.appendChild(db)}
+    var sb=document.createElement('span');sb.className='ac-badge b-status';sb.textContent=u.status;badges.appendChild(sb);
+    card.appendChild(badges);
+    var btns=document.createElement('div');btns.className='ac-btns';
+    var b1=document.createElement('button');b1.className='ab-onway';b1.textContent='I Am On My Way';
+    b1.addEventListener('click',function(){b1.textContent='Sent...';b1.disabled=true;fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:u.id,status:'neighbor_en_route'})}).then(function(){pollStandby()}).catch(function(){})});
+    var b2=document.createElement('button');b2.className='ab-safe';b2.textContent='They Are Safe';
+    b2.addEventListener('click',function(){b2.textContent='Sent...';b2.disabled=true;fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:u.id,status:'safe'})}).then(function(){pollStandby()}).catch(function(){})});
+    btns.appendChild(b1);btns.appendChild(b2);card.appendChild(btns);el.appendChild(card);
+  });
+}
+
+document.getElementById('r1-go').addEventListener('click',function(){if(!document.getElementById('r-name').value.trim())return;localStorage.setItem('blockRole','responder');userRole='responder';hist=['pg-landing'];transitionTo('pg-resp');startRespPoll()});
+var rTimer=null;function startRespPoll(){pollResp();if(rTimer)clearInterval(rTimer);rTimer=setInterval(pollResp,5000)}
+var SO={uncontacted:0,neighbor_en_route:1,safe:2};
+function pollResp(){fetch(API+'/users',{headers:{'ngrok-skip-browser-warning':'1'}}).then(function(r){return r.json()}).then(function(d){var u=Array.isArray(d)?d:(d.users||[]);u.sort(function(a,b){return(SO[a.status]||0)-(SO[b.status]||0)});document.getElementById('resp-count').textContent=u.filter(function(x){return x.status!=='safe'}).length+' unresolved';renderCases(u)}).catch(function(){})}
+
+function renderCases(list){
+  var el=document.getElementById('case-list');el.textContent='';
+  list.forEach(function(u){
+    var card=document.createElement('div');card.className='case-card';
+    var top=document.createElement('div');top.className='case-top';
+    var h=document.createElement('h4');h.textContent=u.name;top.appendChild(h);
+    var fl=document.createElement('span');fl.className='case-floor';fl.textContent='Floor '+(u.floor||0);top.appendChild(fl);
+    card.appendChild(top);
+    var addr=document.createElement('div');addr.className='case-addr';addr.textContent=u.address||'';card.appendChild(addr);
+    var badges=document.createElement('div');badges.className='case-badges';
+    if(u.disability){var db=document.createElement('span');db.className='ac-badge b-dis';db.textContent=u.disability;badges.appendChild(db)}
+    var sb=document.createElement('span');sb.className='ac-badge '+(u.status==='uncontacted'?'b-dis':'b-status');sb.textContent=u.status;badges.appendChild(sb);
+    card.appendChild(badges);
+    if(u.medications){var med=document.createElement('div');med.className='case-meds';med.textContent='Meds: '+u.medications;card.appendChild(med)}
+    if(u.transcript&&u.transcript.trim()){var tr=document.createElement('div');tr.className='case-transcript';tr.textContent='"'+u.transcript.substring(0,120)+(u.transcript.length>120?'...':'')+'"';card.appendChild(tr)}
+    var tm=document.createElement('div');tm.className='case-time';tm.textContent='Updated: '+new Date(u.updatedAt).toLocaleTimeString();card.appendChild(tm);
+    el.appendChild(card);
+  });
+}
+
+document.getElementById('sim-btn').addEventListener('click',function(){var b=this;b.disabled=true;b.textContent='Triggering...';fetch(API+'/test-trigger',{method:'POST',headers:H}).then(function(){toast('Flood watch triggered for San Antonio');b.disabled=false;b.textContent='SIMULATE FLOOD WATCH';pollResp()}).catch(function(){b.disabled=false;b.textContent='SIMULATE FLOOD WATCH'})});
+</script>
+</body>
+</html>

@@ -15,21 +15,31 @@ function sendNeighborSMS(user) {
     return Promise.resolve(false);
   }
 
+  const phones = user.neighborPhone.split(",").map((p) => p.trim()).filter(Boolean);
+  if (phones.length === 0) {
+    console.log(`No valid neighbor phones for ${user.name}, skipping SMS`);
+    return Promise.resolve(false);
+  }
+
   const baseUrl = process.env.BASE_URL || "https://4597-66-253-168-123.ngrok-free.app";
   const client = twilio(sid, authToken);
   const disability = user.disability || "no listed disability";
   const body = `EMERGENCY ALERT: ${user.name} at ${user.address} floor ${user.floor} needs help evacuating. They have ${disability}. Tap this link to respond: ${baseUrl}/neighbor?id=${user.id}`;
 
-  return client.messages
-    .create({ body, from, to: user.neighborPhone })
-    .then(function (msg) {
-      console.log(`SMS sent to ${user.neighborPhone} (sid: ${msg.sid})`);
-      return true;
-    })
-    .catch(function (err) {
-      console.error(`SMS to ${user.neighborPhone} failed:`, err.message);
-      return false;
-    });
+  const sends = phones.map((phone) =>
+    client.messages
+      .create({ body, from, to: phone })
+      .then((msg) => {
+        console.log(`SMS sent to ${phone} (sid: ${msg.sid})`);
+        return true;
+      })
+      .catch((err) => {
+        console.error(`SMS to ${phone} failed:`, err.message);
+        return false;
+      })
+  );
+
+  return Promise.all(sends).then((results) => results.some(Boolean));
 }
 
 module.exports = { sendNeighborSMS };

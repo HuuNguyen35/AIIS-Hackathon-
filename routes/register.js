@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/", (req, res) => {
   try {
-    const { name, address, floor, lat, lng, disability, medications, phone, neighborPhone } = req.body;
+    const { name, address, floor, lat, lng, disability, medications, phone, neighborPhone, neighborPhones } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({ error: "name and phone are required" });
@@ -22,7 +22,7 @@ router.post("/", (req, res) => {
       disability: disability || "",
       medications: medications || "",
       phone,
-      neighborPhone: neighborPhone || "",
+      neighborPhone: Array.isArray(neighborPhones) ? neighborPhones.filter(Boolean).join(",") : (neighborPhone || ""),
       status: "uncontacted",
       transcript: "",
       updatedAt: new Date().toISOString(),
