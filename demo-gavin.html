@@ -46,6 +46,9 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 .pf-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
 .pf-value{font-size:16px;font-weight:600}
 .pf-value.highlight{color:var(--accent)}
+.pf-value.copyable{cursor:pointer;text-decoration:underline;text-decoration-color:var(--border);text-underline-offset:3px;-webkit-user-select:all;user-select:all}
+.copied-toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--text);color:var(--white);font-size:13px;font-weight:600;padding:10px 20px;border-radius:10px;transition:all .3s;z-index:9000;pointer-events:none}
+.copied-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 .actions{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
 .btn-action{width:100%;padding:20px;border:none;border-radius:16px;font-family:var(--font-b);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;min-height:64px;transition:transform .1s}
@@ -154,6 +157,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 
 <script>
 var API=window.location.origin,H={'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},TID='demo-anh';
+function showCopied(){var t=document.getElementById('copied-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1500)}
 var currentScreen='pg-idle',acted=false;
 
 function showScreen(id){
@@ -190,11 +194,12 @@ function renderPerson(u){
   var card=document.getElementById('person-card');
   card.textContent='';
   var name=document.createElement('div');name.className='person-name';name.textContent=u.name;card.appendChild(name);
-  var fields=[['Address',u.address||'—',false],['Floor',String(u.floor),false],['Disability',u.disability||'None reported',true],['Medications',u.medications||'None reported',false]];
+  var fields=[['Address',u.address||'—',false,true],['Floor',String(u.floor),false,false],['Disability',u.disability||'None reported',true,false],['Medications',u.medications||'None reported',false,false]];
   fields.forEach(function(f){
     var pf=document.createElement('div');pf.className='pf';
     var l=document.createElement('div');l.className='pf-label';l.textContent=f[0];
-    var v=document.createElement('div');v.className='pf-value'+(f[2]?' highlight':'');v.textContent=f[1];
+    var v=document.createElement('div');v.className='pf-value'+(f[2]?' highlight':'')+(f[3]?' copyable':'');v.textContent=f[1];
+    if(f[3]){v.addEventListener('click',function(){navigator.clipboard.writeText(f[1]).then(function(){showCopied()}).catch(function(){showCopied()})})}
     pf.appendChild(l);pf.appendChild(v);card.appendChild(pf);
   });
 }
@@ -238,5 +243,6 @@ document.getElementById('btn-submit-report').addEventListener('click',function()
   .catch(function(){btn.disabled=false;btn.textContent='Submit & Mark Safe'});
 });
 </script>
+<div class="copied-toast" id="copied-toast">Address copied</div>
 </body>
 </html>

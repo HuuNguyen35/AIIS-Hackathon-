@@ -23,7 +23,7 @@ async function callNeighbor(user) {
         phoneNumberId: "2a6fae8f-658b-49f0-b856-b2736d971f58",
         customer: { number: phone },
         assistantOverrides: {
-          firstMessage: `Hi, this is an emergency alert. Your neighbor ${user.name} at ${user.address} floor ${user.floor} needs help evacuating. They have ${disability}. Their medications are ${medications}. Can you please check on them immediately?`,
+          firstMessage: `Hi, this is an emergency alert from HandsOnDeck. Your neighbor ${user.name} at ${user.address} floor ${user.floor} needs help evacuating. They have ${disability}. Please open the HandsOnDeck app to see their full profile and confirm you can help.`,
         },
       };
 
