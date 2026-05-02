@@ -2,7 +2,7 @@
   var map = L.map('map', {
     zoomControl: true,
     attributionControl: true
-  }).setView([29.4241, -98.4936], 12);
+  }).setView([29.4241, -98.4936], 11);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -89,18 +89,24 @@
   }
 
   function fetchAndUpdate() {
-    fetch(window.API_BASE + '/users')
+    fetch(window.API_BASE + '/users', {
+      headers: { 'ngrok-skip-browser-warning': '1' }
+    })
       .then(function (res) {
+        console.log('[Block] fetch status:', res.status, res.headers.get('content-type'));
         if (!res.ok) throw new Error('Server returned ' + res.status);
         return res.json();
       })
       .then(function (data) {
+        console.log('[Block] data received:', JSON.stringify(data).substring(0, 200));
         clearError();
         window.BlockDashboard.emit(data);
         var users = Array.isArray(data) ? data : (data.users || []);
+        console.log('[Block] users to render:', users.length);
         updateMarkers(users);
       })
       .catch(function (err) {
+        console.error('[Block] fetch error:', err);
         showError('API unreachable — ' + err.message + ' (' + window.API_BASE + ')');
       });
   }
