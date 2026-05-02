@@ -1,4 +1,4 @@
-const BASE_URL = 'https://6e7b-66-253-168-123.ngrok-free.app';
+const BASE_URL = 'https://b6e9-66-253-168-123.ngrok-free.app';
 
 export async function registerUser(data) {
   const res = await fetch(`${BASE_URL}/register`, {
