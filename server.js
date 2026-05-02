@@ -7,7 +7,9 @@ const usersRouter = require("./routes/users");
 const transcriptsRouter = require("./routes/transcripts");
 const webhookRouter = require("./routes/webhook");
 const pushRouter = require("./routes/pushRegistration");
+const path = require("path");
 const { startPolling } = require("./services/nws");
+const { triggerDisaster } = require("./services/vapi");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +26,24 @@ app.use("/push-token", pushRouter);
 
 app.get("/", (_req, res) => {
   res.json({ service: "Block Disaster Response API", status: "running" });
+});
+
+app.get("/app", (_req, res) => {
+  res.sendFile(path.join(__dirname, "mobile-app.html"));
+});
+
+app.post("/test-trigger", async (_req, res) => {
+  try {
+    const alert = {
+      event: "Flood Watch",
+      headline: "Flood Watch issued for Bexar County, San Antonio TX",
+      description: "TEST ALERT — Manual trigger for development testing.",
+    };
+    triggerDisaster(alert);
+    res.json({ triggered: true, alert });
+  } catch (err) {
+    res.status(500).json({ error: "Trigger failed", details: err.message });
+  }
 });
 
 app.listen(PORT, "0.0.0.0", () => {
