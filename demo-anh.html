@@ -230,11 +230,7 @@ document.getElementById('nb-add').addEventListener('click',function(){addNeighbo
 document.getElementById('btn-save').addEventListener('click',function(){
   var btn=this;btn.disabled=true;btn.textContent='Saving...';
   var phones=[];document.querySelectorAll('.nb-input').forEach(function(i){if(i.value.trim())phones.push(i.value.trim())});
-  fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({
-    id:UID,
-    status:undefined
-  })});
-  fetch(API+'/register',{method:'POST',headers:H,body:JSON.stringify({
+  fetch(API+'/users/'+UID,{method:'PUT',headers:H,body:JSON.stringify({
     name:document.getElementById('f-name').value.trim(),
     phone:document.getElementById('f-phone').value.trim(),
     address:document.getElementById('f-address').value.trim(),

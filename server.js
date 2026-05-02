@@ -54,6 +54,27 @@ app.get("/demo/gavin", (_req, res) => {
   res.sendFile(path.join(__dirname, "demo-gavin.html"));
 });
 
+app.put("/users/:id", (req, res) => {
+  try {
+    const { name, phone, address, floor, disability, medications, neighborPhones, neighborPhone } = req.body;
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (phone !== undefined) updates.phone = phone;
+    if (address !== undefined) updates.address = address;
+    if (floor !== undefined) updates.floor = floor;
+    if (disability !== undefined) updates.disability = disability;
+    if (medications !== undefined) updates.medications = medications;
+    if (Array.isArray(neighborPhones)) updates.neighborPhone = neighborPhones.filter(Boolean).join(",");
+    else if (neighborPhone !== undefined) updates.neighborPhone = neighborPhone;
+
+    const user = updateUser(req.params.id, updates);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update user", details: err.message });
+  }
+});
+
 app.get("/alert", (_req, res) => {
   res.json({ alert: getCurrentAlert() });
 });
