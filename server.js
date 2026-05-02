@@ -33,11 +33,19 @@ app.get("/app", (_req, res) => {
   res.sendFile(path.join(__dirname, "mobile-app.html"));
 });
 
+app.get("/neighbor", (_req, res) => {
+  res.sendFile(path.join(__dirname, "neighbor.html"));
+});
+
 app.post("/call/:id", async (req, res) => {
   try {
     const user = await callSingleUser(req.params.id);
-    sendNeighborSMS(user);
-    res.json({ called: true, user: { id: user.id, name: user.name, phone: user.phone } });
+    const smsSent = await sendNeighborSMS(user);
+    if (smsSent) {
+      const { updateUser } = require("./db/store");
+      updateUser(user.id, { status: "neighbor_en_route" });
+    }
+    res.json({ called: true, smsSent, user: { id: user.id, name: user.name, phone: user.phone } });
   } catch (err) {
     res.status(err.message === "User not found" ? 404 : 500).json({ error: err.message });
   }

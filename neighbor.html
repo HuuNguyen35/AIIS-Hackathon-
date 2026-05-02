@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>BLOCK — Neighbor Response</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --navy: #0f1923;
+      --cream: #f8f6f2;
+      --red: #e63946;
+      --teal: #2a9d8f;
+      --amber: #f4a261;
+      --text: #1a1a2e;
+      --text-2: #6a6d78;
+      --text-3: #a0a4ad;
+      --border: #ddd9d2;
+      --white: #ffffff;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes pulse-dot { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15); } }
+
+    .header {
+      background: var(--navy);
+      padding: 16px 24px;
+      padding-top: max(env(safe-area-inset-top), 16px);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .header-logo {
+      width: 32px; height: 32px;
+      background: var(--red); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(230,57,70,0.3);
+    }
+    .header-logo svg { width: 16px; height: 16px; }
+    .header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 800; color: #fff; letter-spacing: 2px;
+    }
+
+    .content {
+      padding: 24px 20px 60px;
+      max-width: 500px; margin: 0 auto;
+    }
+
+    .alert-banner {
+      background: rgba(230,57,70,0.08); border-radius: 16px;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .alert-dot {
+      width: 12px; height: 12px;
+      background: var(--red); border-radius: 50%; flex-shrink: 0;
+      animation: pulse-dot 1.5s ease infinite;
+    }
+    .alert-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700; color: var(--red);
+    }
+
+    .person-card {
+      background: var(--white); border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+    .person-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px; font-weight: 800;
+      margin-bottom: 20px; line-height: 1.2;
+    }
+    .person-fields { display: flex; flex-direction: column; gap: 14px; }
+    .pf { display: flex; flex-direction: column; gap: 2px; }
+    .pf-label {
+      font-size: 11px; font-weight: 700;
+      color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;
+    }
+    .pf-value { font-size: 16px; font-weight: 600; color: var(--text); }
+    .pf-value.highlight { color: var(--red); }
+
+    .map-wrap {
+      border-radius: 16px; overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      animation: fadeUp 0.5s ease 0.15s both;
+    }
+    .map-wrap img { width: 100%; height: auto; display: block; }
+
+    .actions {
+      display: flex; flex-direction: column; gap: 12px;
+      animation: fadeUp 0.5s ease 0.2s both;
+    }
+    .btn-action {
+      width: 100%; padding: 20px; border: none; border-radius: 50px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      min-height: 64px; transition: transform 0.1s, opacity 0.2s;
+    }
+    .btn-action:active:not(:disabled) { transform: scale(0.97); }
+    .btn-action:disabled { opacity: 0.5; cursor: default; }
+    .btn-action svg { width: 22px; height: 22px; }
+    .btn-onway {
+      background: var(--teal); color: #fff;
+      box-shadow: 0 6px 24px rgba(42,157,143,0.25);
+    }
+    .btn-thesafe {
+      background: var(--white); color: var(--teal);
+      border: 2.5px solid var(--teal);
+    }
+
+    .result-msg {
+      display: none; text-align: center;
+      padding: 24px; background: var(--white);
+      border-radius: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      animation: fadeUp 0.4s ease both;
+    }
+    .result-msg.visible { display: block; }
+    .result-msg .r-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 14px; background: rgba(42,157,143,0.1); color: var(--teal);
+    }
+    .result-msg .r-icon svg { width: 28px; height: 28px; }
+    .result-msg h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 800; margin-bottom: 6px;
+    }
+    .result-msg p { font-size: 15px; color: var(--text-2); line-height: 1.5; }
+
+    .loading { text-align: center; padding: 60px 20px; color: var(--text-3); font-size: 15px; }
+    .error-msg { text-align: center; padding: 60px 20px; color: var(--red); font-size: 15px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    </div>
+    <h1>BLOCK</h1>
+  </div>
+
+  <div class="content" id="content">
+    <div class="loading" id="loading-state">Loading emergency details...</div>
+  </div>
+
+  <script>
+    var API = window.location.origin;
+    var HEADERS = { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' };
+
+    var params = new URLSearchParams(window.location.search);
+    var targetId = params.get('id');
+
+    if (!targetId) {
+      showError('Invalid link — no user ID provided.');
+    } else {
+      loadUser();
+    }
+
+    function showError(msg) {
+      var c = document.getElementById('content');
+      c.textContent = '';
+      var d = document.createElement('div');
+      d.className = 'error-msg';
+      d.textContent = msg;
+      c.appendChild(d);
+    }
+
+    function loadUser() {
+      fetch(API + '/users', { headers: { 'ngrok-skip-browser-warning': '1' } })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var users = Array.isArray(data) ? data : (data.users || []);
+          var user = users.find(function(u) { return u.id === targetId; });
+          if (!user) throw new Error('User not found');
+          renderUser(user);
+        })
+        .catch(function(err) {
+          showError('Could not load: ' + err.message);
+        });
+    }
+
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text) e.textContent = text;
+      return e;
+    }
+
+    function svgIcon(paths) {
+      var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      s.setAttribute('viewBox', '0 0 24 24');
+      s.setAttribute('fill', 'none');
+      s.setAttribute('stroke', 'currentColor');
+      s.setAttribute('stroke-width', '2.5');
+      s.setAttribute('stroke-linecap', 'round');
+      s.setAttribute('stroke-linejoin', 'round');
+      paths.forEach(function(d) {
+        var p;
+        if (d.indexOf(' ') > -1 && d.indexOf('M') === -1) {
+          p = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+          p.setAttribute('points', d);
+        } else {
+          p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          p.setAttribute('d', d);
+        }
+        s.appendChild(p);
+      });
+      return s;
+    }
+
+    function makeField(label, value, highlight) {
+      var pf = el('div', 'pf');
+      pf.appendChild(el('span', 'pf-label', label));
+      var val = el('span', highlight ? 'pf-value highlight' : 'pf-value', value);
+      pf.appendChild(val);
+      return pf;
+    }
+
+    function renderUser(user) {
+      var c = document.getElementById('content');
+      c.textContent = '';
+
+      var banner = el('div', 'alert-banner');
+      banner.appendChild(el('span', 'alert-dot'));
+      banner.appendChild(el('span', 'alert-text', 'Your neighbor needs help'));
+      c.appendChild(banner);
+
+      var card = el('div', 'person-card');
+      card.appendChild(el('div', 'person-name', user.name));
+      var fields = el('div', 'person-fields');
+      fields.appendChild(makeField('Address', user.address || '—'));
+      fields.appendChild(makeField('Floor', String(user.floor)));
+      fields.appendChild(makeField('Disability', user.disability || 'None reported', true));
+      fields.appendChild(makeField('Medications', user.medications || 'None reported'));
+      card.appendChild(fields);
+      c.appendChild(card);
+
+      var mapWrap = el('div', 'map-wrap');
+      var mapImg = document.createElement('img');
+      mapImg.alt = 'Location map';
+      mapImg.src = 'https://staticmap.openstreetmap.de/staticmap.php?center=' + user.lat + ',' + user.lng + '&zoom=15&size=600x300&markers=' + user.lat + ',' + user.lng + ',red';
+      mapWrap.appendChild(mapImg);
+      c.appendChild(mapWrap);
+
+      var actions = el('div', 'actions');
+      actions.id = 'actions';
+
+      var btnOnway = el('button', 'btn-action btn-onway');
+      btnOnway.appendChild(svgIcon(['M5 12h14', 'M12 5l7 7-7 7']));
+      var onwaySpan = el('span', null, 'I Am On My Way');
+      btnOnway.appendChild(onwaySpan);
+
+      var btnSafe = el('button', 'btn-action btn-thesafe');
+      btnSafe.appendChild(svgIcon(['M22 11.08V12a10 10 0 11-5.93-9.14', '22 4 12 14.01 9 11.01']));
+      var safeSpan = el('span', null, 'They Are Safe');
+      btnSafe.appendChild(safeSpan);
+
+      actions.appendChild(btnOnway);
+      actions.appendChild(btnSafe);
+      c.appendChild(actions);
+
+      var resultOnway = buildResult('Status Updated', 'They know you are coming. Please get to them as quickly and safely as possible.', ['M5 12h14', 'M12 5l7 7-7 7']);
+      resultOnway.id = 'result-onway';
+      c.appendChild(resultOnway);
+
+      var resultSafe = buildResult('Thank You', 'Emergency responders have been notified that they are safe.', ['M22 11.08V12a10 10 0 11-5.93-9.14', '22 4 12 14.01 9 11.01']);
+      resultSafe.id = 'result-safe';
+      c.appendChild(resultSafe);
+
+      btnOnway.addEventListener('click', function() {
+        btnOnway.disabled = true;
+        onwaySpan.textContent = 'Updating...';
+        postStatus('neighbor_en_route', function() {
+          actions.style.display = 'none';
+          resultOnway.classList.add('visible');
+        }, function() {
+          btnOnway.disabled = false;
+          onwaySpan.textContent = 'I Am On My Way';
+        });
+      });
+
+      btnSafe.addEventListener('click', function() {
+        btnSafe.disabled = true;
+        safeSpan.textContent = 'Updating...';
+        postStatus('safe', function() {
+          actions.style.display = 'none';
+          resultSafe.classList.add('visible');
+        }, function() {
+          btnSafe.disabled = false;
+          safeSpan.textContent = 'They Are Safe';
+        });
+      });
+    }
+
+    function buildResult(title, text, iconPaths) {
+      var wrap = el('div', 'result-msg');
+      var icon = el('div', 'r-icon');
+      icon.appendChild(svgIcon(iconPaths));
+      wrap.appendChild(icon);
+      wrap.appendChild(el('h3', null, title));
+      wrap.appendChild(el('p', null, text));
+      return wrap;
+    }
+
+    function postStatus(status, onSuccess, onError) {
+      fetch(API + '/status', {
+        method: 'POST',
+        headers: HEADERS,
+        body: JSON.stringify({ id: targetId, status: status })
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('Server error');
+        return res.json();
+      })
+      .then(onSuccess)
+      .catch(onError);
+    }
+  </script>
+</body>
+</html>
