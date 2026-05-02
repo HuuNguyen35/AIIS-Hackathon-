@@ -1,42 +1,33 @@
 (function () {
-  /* ── Map init ── */
   var map = L.map('map', {
     zoomControl: true,
     attributionControl: true
   }).setView([29.4241, -98.4936], 12);
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 20
   }).addTo(map);
 
-  /* Force map to fill its flex container after layout settles */
   setTimeout(function () { map.invalidateSize(); }, 120);
 
-  /* ── Marker state ── */
   var markers = {};
 
   var STATUS_COLOR = {
-    uncontacted:       '#ff2020',
-    neighbor_en_route: '#ffc400',
-    safe:              '#00cc44'
-  };
-
-  var STATUS_LABEL = {
-    uncontacted:       'UNCONTACTED',
-    neighbor_en_route: 'EN ROUTE',
-    safe:              'SAFE'
+    uncontacted:       '#e63946',
+    neighbor_en_route: '#f4a261',
+    safe:              '#2a9d8f'
   };
 
   function markerOptions(color) {
     return {
-      radius:      13,
+      radius:      9,
       fillColor:   color,
-      color:       color,
-      weight:      2,
+      color:       '#ffffff',
+      weight:      3,
       opacity:     1,
-      fillOpacity: 0.82
+      fillOpacity: 0.9
     };
   }
 
@@ -47,7 +38,7 @@
       if (user.lat == null || user.lng == null) return;
 
       seen[user.id] = true;
-      var color = STATUS_COLOR[user.status] || '#ff2020';
+      var color = STATUS_COLOR[user.status] || '#e63946';
 
       if (markers[user.id]) {
         markers[user.id].setStyle(markerOptions(color));
@@ -58,7 +49,7 @@
         m.bindTooltip(user.name, {
           permanent:  false,
           direction:  'top',
-          offset:     [0, -14],
+          offset:     [0, -12],
           className:  'marker-tooltip'
         });
 
@@ -71,7 +62,6 @@
       }
     });
 
-    /* Remove stale markers */
     Object.keys(markers).forEach(function (id) {
       if (!seen[id]) {
         map.removeLayer(markers[id]);
@@ -80,13 +70,12 @@
     });
   }
 
-  /* ── Error banner ── */
   var banner       = document.getElementById('error-banner');
   var errorShowing = false;
 
   function showError(msg) {
     if (!errorShowing) {
-      banner.textContent = '⚠ ' + msg;
+      banner.textContent = msg;
       banner.style.display = 'block';
       errorShowing = true;
     }
@@ -99,7 +88,6 @@
     }
   }
 
-  /* ── Polling ── */
   function fetchAndUpdate() {
     fetch(window.API_BASE + '/users')
       .then(function (res) {
