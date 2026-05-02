@@ -124,7 +124,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99999;
 
 <script>
 var API=window.location.origin,H={'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},UID='demo-anh';
-var currentScreen='pg-idle';
+var currentScreen='pg-idle',hadEmergency=false;
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
@@ -149,13 +149,18 @@ function poll(){
       var hasAlert=!!ad.alert;
       var s=me.status;
 
-      if(s==='safe'){
+      if(s==='safe' && hadEmergency){
         showScreen('pg-safe');
+      } else if(s==='safe' && !hadEmergency){
+        if(hasAlert && currentScreen==='pg-idle') showScreen('pg-flood');
+        else if(!hasAlert) showScreen('pg-idle');
       } else if(s==='neighbor_en_route'){
+        hadEmergency=true;
         showScreen('pg-coming');
       } else if(s==='uncontacted' && currentScreen==='pg-waiting'){
-        // stay on waiting
+        hadEmergency=true;
       } else if(s==='uncontacted' && currentScreen!=='pg-waiting'){
+        hadEmergency=true;
         if(hasAlert) showScreen('pg-flood');
         else showScreen('pg-idle');
       } else {
@@ -169,7 +174,7 @@ function poll(){
 }
 
 document.getElementById('btn-help').addEventListener('click',function(){
-  var btn=this;btn.disabled=true;
+  var btn=this;btn.disabled=true;hadEmergency=true;
   fetch(API+'/status',{method:'POST',headers:H,body:JSON.stringify({id:UID,status:'uncontacted'})})
   .then(function(r){return r.json()})
   .then(function(){
