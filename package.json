@@ -2,7 +2,7 @@
   "name": "block-disaster-response",
   "version": "1.0.0",
   "description": "Backend for Block disaster response app",
-  "main": "server.js",
+  "main": "main.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "electron": "^28.0.0"
+    "electron": "^28.3.3"
   },
   "private": true
 }
